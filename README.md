@@ -1,36 +1,95 @@
-<h1>Hello! I'm Mauro Vera <img src="https://raw.githubusercontent.com/iampavangandhi/iampavangandhi/master/gifs/Hi.gif" width="30px"> 🚀</h1>
-<h2>Frontend Developer 🎨 and Content Creator 📽</h2>
+\## Hello! I am Juan Diego Espinosa <img src="https://raw.githubusercontent.com/iampavangandhi/iampavangandhi/master/gifs/Hi.gif" width="30px"> 🚀</h1>
+<h2>Analyst 📉 and data science 🧑🏽‍🔬</h2>
 
-### About Me
-- I am 21 years old and I am from Funes, Santa Fe, Argentina.
-- I am a MERN and PERN full stack developer.
-- I am a self-taught and highly creative individual who seeks to learn and improve every day.
-- I enjoy working with the frontend because I want to provide the best visual experience for the users who visit my projects.
 
-### Technologies
-  ![JavaScript](https://img.shields.io/badge/-JavaScript-333333?style=flat&logo=javascript)
-  ![Typescript](https://img.shields.io/badge/-Typescript-333333?style=flat&logo=typescript)
-  ![HTML5](https://img.shields.io/badge/-HTML5-333333?style=flat&logo=HTML5)
-  ![CSS](https://img.shields.io/badge/-CSS-333333?style=flat&logo=CSS3&logoColor=1572B6)
-  ![SCSS](https://img.shields.io/badge/-SCSS-333333?style=flat&logo=SASS&logoColor=CE6B9E)
-  ![Angular](https://img.shields.io/badge/-Angular-333333?style=flat&logo=angular)
-  ![React](https://img.shields.io/badge/-React-333333?style=flat&logo=react)
-  ![Redux](https://img.shields.io/badge/-Redux-333333?style=flat&logo=redux)
-  ![Figma](https://img.shields.io/badge/-Figma-333333?style=flat&logo=figma)
-  <br/>
-  ![Node.js](https://img.shields.io/badge/-Node.js-333333?style=flat&logo=node.js)
-  ![Express](https://img.shields.io/badge/-Express-333333?style=flat&logo=express)
-  ![PostgreSQL](https://img.shields.io/badge/-PostgreSQL-333333?style=flat&logo=postgresql)
-  ![Sequelize](https://img.shields.io/badge/-Sequelize-333333?style=flat&logo=sequelize)
-  ![MongoDB](https://img.shields.io/badge/-MongoDB-333333?style=flat&logo=MongoDB)
 
-### Contact Me
-<a href="https://www.linkedin.com/in/maurovera/"><img alt="LinkedIn" src="https://img.shields.io/badge/LinkedIn-Mauro%20Vera-blue?style=flat-square&logo=linkedin"></a>
-<a href="https://www.youtube.com/channel/UCUORUOKKg8Ezj4tBJb_cRUQ"><img alt="Youtube" src="https://img.shields.io/badge/Youtube-Mauro%20Dev-blue?style=flat-square&logo=youtube"></a>
-<a href="https://www.tiktok.com/@devmauro_"><img alt="Tiktok" src="https://img.shields.io/badge/Dev Mauro-blue?style=flat-square&logo=tiktok"></a>  
-<a href="maurovera069@gmail.com"><img alt="Email" src="https://img.shields.io/badge/Gmail-Maurovera069@gmail.com-blue?style=flat-square&logo=gmail"></a>  
 
-![GitHub Activity](https://github-readme-stats.vercel.app/api?username=mauro069&show_icons=true)
 
-<p align="left"> <img src="https://komarev.com/ghpvc/?username=mauro069&label=Profile%20views&color=0e75b6&style=flat" alt="mauro069" /> </p>
+I am a 23-year-old Statistics student based in Bello, Colombia, currently working as an intern and close to graduating.
+
+
+
+I am passionate about becoming a Data Analyst because I strongly believe that understanding data allows organizations to make informed decisions that create real and positive impact.
+
+
+
+\## About Me
+
+
+
+* 📊 Statistics student (soon to graduate)
+* 💼 Currently working as an intern
+* 📈 Focused on building a career in Data Analytics
+* 🔍 Analytical, creative, and highly committed
+* 🚀 Constantly learning and improving my skills
+
+
+
+\## Skills \& Tools
+
+
+
+\- \*\*Languages:\*\* Python, R, SQL
+
+\- \*\*Data Analysis:\*\* Pandas, PySpark
+
+\- \*\*Visualization:\*\* Power BI, Excel
+
+\- \*\*Other:\*\* Git (version control), MLOps fundamentals
+
+
+
+\## 🛠️ Technologies \& Tools
+
+
+
+!\[Python](https://img.shields.io/badge/-Python-333333?style=flat\&logo=python)
+
+!\[R](https://img.shields.io/badge/-R-333333?style=flat\&logo=r)
+
+!\[SQL](https://img.shields.io/badge/-SQL-333333?style=flat\&logo=mysql)
+
+
+
+!\[Pandas](https://img.shields.io/badge/-Pandas-333333?style=flat\&logo=pandas)
+
+!\[PySpark](https://img.shields.io/badge/-PySpark-333333?style=flat\&logo=apachespark)
+
+
+
+!\[Excel](https://img.shields.io/badge/-Excel-333333?style=flat\&logo=microsoft-excel)
+
+!\[Power BI](https://img.shields.io/badge/-PowerBI-333333?style=flat\&logo=powerbi)
+
+
+
+!\[Git](https://img.shields.io/badge/-Git-333333?style=flat\&logo=git)
+
+!\[GitHub](https://img.shields.io/badge/-GitHub-333333?style=flat\&logo=github)
+
+
+
+!\[MLOps](https://img.shields.io/badge/-MLOps-333333?style=flat)
+
+
+
+
+
+\## 📫 Connect with me
+
+
+
+<a href="https://www.linkedin.com/in/juan-diego-espinosa-hernandez-98089b212">
+
+&#x20; <img alt="LinkedIn" src="https://img.shields.io/badge/LinkedIn-TU%20NOMBRE-blue?style=flat-square\&logo=linkedin">
+
+</a>
+
+
+
+<a href="mailto:diego.ex.espinosa@gmail.com">
+
+&#x20; <img alt="Email" src="https://img.shields.io/badge/Gmail-TU-CORREO@gmail.com-blue?style=flat-square\&logo=gmail">
+
+</a>
 
