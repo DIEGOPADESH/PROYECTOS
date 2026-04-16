@@ -8,7 +8,7 @@
 
 
 
-<h2>Data Analyst 📊 | Aspiring Data Scientist 🧑🏽‍🔬</h2>
+<h2>Data Analyst 📊 | Data Scientist 🧑🏽‍🔬</h2>
 
 
 
