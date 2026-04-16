@@ -1,4 +1,4 @@
-\## Hello! I am Juan Diego Espinosa <img src="https://raw.githubusercontent.com/iampavangandhi/iampavangandhi/master/gifs/Hi.gif" width="30px"> 🚀</h1>
+<h1> Hello! I am Juan Diego Espinosa <img src="https://raw.githubusercontent.com/iampavangandhi/iampavangandhi/master/gifs/Hi.gif" width="30px"> 🚀</h1>
 <h2>Analyst 📉 and data science 🧑🏽‍🔬</h2>
 
 
@@ -13,7 +13,7 @@ I am passionate about becoming a Data Analyst because I strongly believe that un
 
 
 
-\## About Me
+<h2> About Me </h2>
 
 
 
@@ -25,7 +25,7 @@ I am passionate about becoming a Data Analyst because I strongly believe that un
 
 
 
-\## Skills \& Tools
+<h2> Skills \& Tools </h2>
 
 
 
@@ -39,7 +39,7 @@ I am passionate about becoming a Data Analyst because I strongly believe that un
 
 
 
-\## 🛠️ Technologies \& Tools
+<h2> 🛠️ Technologies \& Tools </h2>
 
 
 
@@ -75,7 +75,7 @@ I am passionate about becoming a Data Analyst because I strongly believe that un
 
 
 
-\## 📫 Connect with me
+<h2> 📫 Connect with me </h2>
 
 
 
