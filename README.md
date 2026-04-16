@@ -1,6 +1,6 @@
 <h1>
 
-&#x20; Hello! I'm Juan Diego Espinosa 
+&#x20; Hello! I am Juan Diego Espinosa 
 
 &#x20; <img src="https://raw.githubusercontent.com/iampavangandhi/iampavangandhi/master/gifs/Hi.gif" width="30px"> 🚀
 
