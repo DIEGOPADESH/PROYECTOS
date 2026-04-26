@@ -1,0 +1,274 @@
+---
+title: "Bitacora"
+author:
+- Juan David Garcia Zapata
+- Laura Florez Ceballos
+- Juan Diego Espinosa Hernandez
+- Katerine Gomez
+- Jorge Andres Garcia Soto
+date: "2023-04-12"
+output:
+  pdf_document:
+    latex_engine: xelatex
+    keep_tex: yes
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Librerias de R usadas
+
+```{r, echo=FALSE,message=FALSE}
+library(readxl)
+library(tidyverse)
+```
+
+- tidyverse
+- readxl
+
+# Depuracion de la base de datos
+
+```{r, echo=FALSE, message=FALSE}
+BD1 <- read_xlsx("BD/BD1.xlsx")
+BD2 <- read_xlsx("BD/BD2.xlsx")
+BD3 <- read_xlsx("BD/BD3.xlsx")
+BD4 <- read_xlsx("BD/BD4.xlsx")
+BD5 <- read_xlsx("BD/BD5.xlsx", sheet = "Hoja 2")
+BD6 <- read_xlsx("BD/BD6.xlsx")
+BD7 <- read_xlsx("BD/BD7.xlsx")
+```
+
+En general hay que borrar los valores N/A y simplemente dejar la celda vacia (despues el R hara el resto), ya que estos estan generando errores
+
+![](Imagenes/C.jpg)
+
+### Base de Datos 1
+
+#### Columna Innecesaria
+
+```{r, echo = FALSE}
+# Eliminando columna sobrante, y que no es util
+BD1$`Quién tomó los datos` <- NULL
+```
+
+### Valores erroneos y que seran eliminados por ser inconsistentes o corregidos
+
+- Procede a eliminarsen estos datos ya que como tal son numeros y no fechas
+
+![](Imagenes/C1B1.jpg)
+
+- Hay multiples fechas que estas separadas por un **guion "-"** y no por un **slash "/"** asi que se procede a reemplazarlos, o en este caso, ponerle el formato
+
+![](Imagenes/C2B1.jpg)
+
+asi: 
+
+![](Imagenes/C2.1B1.jpg)
+
+- En este base de datos el sexo del hijo, tiene los valores = "M" y "F", para Masculino y Femenino respectivamente, asi que cambiariamos esto a los valores = "Masculino" y "Femenino" para que en todas las bases de datos quede igual
+
+```{r, echo = FALSE}
+#destino <- ifelse(condicion, valor si la condicion se cumple, valor si la condicion no se cumple)
+BD1$`Género - Hija o hijo` <- ifelse(BD1$`Género - Hija o hijo` == 'F', 'Femenino', 'Masculino')
+```
+
+- En esta base de datos las estaturas estan en metros, asi que las pasaremos a centimetros
+
+```{r,echo = FALSE, warning=FALSE}
+BD1$`Estatura - Padre` <- as.numeric(BD1$`Estatura - Padre`)
+BD1$`Estatura - Madre` <- as.numeric(BD1$`Estatura - Madre`)
+BD1$`Estatura - Hija o hijo` <- as.numeric(BD1$`Estatura - Hija o hijo`)
+
+BD1$`Estatura - Padre` = apply (BD1[ ,4],1, function(x) x*100)
+BD1$`Estatura - Madre` = apply (BD1[ ,8],1, function(x) x*100)
+BD1$`Estatura - Hija o hijo` = apply (BD1[ ,12],1, function(x) x*100)
+
+```
+
+
+### Base de Datos 2
+
+- En este base de datos el sexo del hijo, tiene los valores = "M" y "F", para Masculino y Femenino respectivamente, asi que cambiariamos esto a los valores = "Masculino" y "Femenino" para que en todas las bases de datos quede igual
+
+```{r, echo = FALSE}
+#destino <- ifelse(condicion, valor si la condicion se cumple, valor si la condicion no se cumple)
+BD2$Genero <- ifelse(BD2$Genero == 'F', 'Femenino', 'Masculino')
+```
+
+- En las fechas de nacimiento de la madre y fecha de expedicion de la madre, estan intercambiadas, o sea que en ciertos registros donde el dato correspondiente a la expedicion esta donde es la de la fecha de nacimiento
+
+![](Imagenes/C1B2.jpg)
+
+```{r, echo = FALSE}
+# Creacion de una columna auxiliar
+BD2$auxiliar <- BD2$Fecha_nacimiento_madre
+
+# Como en la columna auxiliar realmente estan las fechas de expedicion, entonces lo valores de la columna 11 (Expedicion (que realmente son las de nacimiento)) los pondremos en la columna 10 (Nacimiento (que realmente son las de expedicion)) y despues gracias a la columna auxiliar, pues pondremos los valores correspondientes a la auxiliar (Expediciones) en la columna 11 (Expediciones)
+for (i in 40:50){
+  BD2[i,10] <- BD2[i,11]
+  BD2[i,11] <- BD2[i,14]
+}
+
+# Eliminando la columna auxiliar
+BD2$auxiliar <- NULL
+```
+
+
+### Base de Datos 5
+
+#### Valores erroneos y que seran eliminados por ser inconsistentes o corregidos
+
+- Dia 45 no existe en el calendario
+
+![](Imagenes/C1B5.jpg)
+
+- Claramente solo falta la separacion del Slash, para que la fecha este bien escrita y un 0 al lado del 8
+
+![](Imagenes/C2B5.jpg)
+
+y asi queda:
+
+![](Imagenes/C2.1B5.jpg)
+
+- Procede a eliminarse ya que es una fecha invalida (no existe el mes 16)
+
+![](Imagenes/C3B5.jpg)
+
+- En este registro, en la altura correspondiente al padre, hay un valor de 0, asi que procede a eliminarse toda la fila ya que tenemos suficientes datos como para cubrir este vacio
+
+![](Imagenes/C4B5.jpg)
+
+```{r, echo = FALSE}
+BD5 <- BD5[-45,]
+```
+
+
+### Base de datos 7
+
+- En esta base de datos las estaturas estan en metros, asi que las pasaremos a centimetros
+
+```{r, echo = FALSE}
+# Pasando las estaturas de metros a centimetros
+BD7$ESTATURA_PADRE <- as.numeric(BD7$ESTATURA_PADRE)
+BD7$ESTATURA_MADRE <- as.numeric(BD7$ESTATURA_MADRE)
+BD7$ESTATURA_HIJO <- as.numeric(BD7$ESTATURA_HIJO)
+
+BD7$ESTATURA_PADRE = apply (BD7[ ,2],1, function(x) x*100)
+BD7$ESTATURA_MADRE = apply (BD7[ ,6],1, function(x) x*100)
+BD7$ESTATURA_HIJO = apply (BD7[ ,10],1, function(x) x*100)
+```
+
+
+### Reacomodacion de columnas
+
+Para poder unir las columnas usando R, se necesita reacomodar las columnas para que concuerden los valores de cada columna para poder unirlas
+
+```{r, echo = FALSE}
+# Reacomodacion de columnas (para que queden iguales)
+BDM1 <- BD1[ , c(1,2,4,3,5,6,8,7,13,9,10,12,11)]
+BDM2 <- BD2[ , c(7,6,8,9,10,11,12,13,5,2,1,3,4)]
+BDM3 <- BD3[ , c(1,4,2,3,5,8,6,7,12,9,13,10,11)]
+BDM4 <- BD4
+BDM5 <- BD5[ , c(1,4,2,3,5,8,6,7,12,9,13,10,11)]
+BDM6 <- BD6[ , c(1,2,3,4,5,6,7,8,13,9,10,11,12)]
+BDM7 <- BD7[ , c(1,4,2,3,5,8,6,7,13,9 ,12,10,11)]
+```
+
+### Cambio de nombres de columnas
+
+Pero ademas de sus valores tambien debe de concordar los nombres de las columnas
+
+```{r, echo = FALSE}
+# Cambio de nombres de columnas, para que en todas las bases de datos queden iguales
+titulos <- list("FN1","FE1","A1","RH1","FN2","FE2","A2","RH2","X3","FN3","FE3","A3","RH3")
+
+for (i in 1:13){
+ colnames(BDM1)[i] <- titulos[i]
+}
+
+for (i in 1:13){
+ colnames(BDM2)[i] <- titulos[i]
+}
+
+for (i in 1:13){
+ colnames(BDM3)[i] <- titulos[i]
+}
+
+for (i in 1:13){
+ colnames(BDM5)[i] <- titulos[i]
+}
+
+for (i in 1:13){
+ colnames(BDM6)[i] <- titulos[i]
+}
+
+for (i in 1:13){
+ colnames(BDM7)[i] <- titulos[i]
+}
+```
+
+
+### Union de bases de datos
+
+Ahora si podemos unir las bases de datos
+
+```{r, echo = FALSE}
+# Union de todas las bases de datos
+Datos <- rbind(BDM1,BDM2,BDM3,BDM4,BDM5,BDM6,BDM7)
+
+rm(BD1,BD2,BD3,BD4,BD5,BD6,BD7,BDM1,BDM2,BDM3,BDM4,BDM5,BDM6,BDM7,titulos,i)
+```
+
+- Por ultimo, falta poner las clases Masulinos y Femeninos iguales en el genero del hijo mayor, ya que hay 4 clases en este momento (FEMENINO, MASCULINO, Femenino, Masculino) y dejaremos todo con la clase de las minusculas
+
+```{r, echo = FALSE}
+Datos$X3 <- str_replace_all(Datos$X3, "FEMENINO", "Femenino")
+Datos$X3 <- str_replace_all(Datos$X3, "MASCULINO", "Masculino")
+```
+
+### Detallitos
+
+- En la columna de alturas de los padres hay 9 NAs (no existe un valor), por lo que para solventar esto, procederemos a reemplazar los NA por la media de las estaturas de los padres
+
+```{r, echo = FALSE}
+mean(na.omit(Datos$A1))
+```
+
+Como el resultado fue 171.8006, procedemos a aproximarlo a 172
+
+```{r, echo = FALSE}
+#Aproximacion
+a <- ceiling(mean(na.omit(Datos$A1)))
+Datos$A1 <- Datos$A1 %>% replace(is.na(.),a)
+```
+
+- En la columna de alturas de los madres hay 4 NAs (no existe un valor), por lo que para solventar esto, procederemos a reemplazar los NA por la media de las estaturas de los madres
+
+```{r, echo = FALSE}
+a <- mean(na.omit(Datos$A2))
+a
+```
+
+Este no hay que aproximarlo, por lo tanto usamos asi tal cual el valor
+
+```{r, echo = FALSE}
+Datos$A2 <- Datos$A2 %>% replace(is.na(.),a)
+rm(a)
+```
+
+
+Por ultimo y para finalizar, exportamos los datos de la siguiente manera:
+
+```{r, echo = FALSE}
+write.csv(Datos,"Datos.csv")
+```
+
+
+
+
+
+

@@ -1,0 +1,411 @@
+---
+title: "Estaturas"
+author:
+- Juan David Garcia Zapata
+- Laura Florez Ceballos
+- Juan Diego Espinosa Hernandez
+- Katerine Gomez
+- Jorge Andres Garcia Soto
+date: "2023-04-12"
+output:
+  pdf_document:
+    latex_engine: xelatex
+    keep_tex: yes
+  html_document:
+    df_print: paged
+---
+
+```{r, echo = FALSE}
+RSS <- function(b0,b1,dependiente,independiente){
+  lista = list()
+  for (i in 1:length(dependiente)){
+    
+    Y = b0 + b1*independiente[i]
+    
+    lista[i] = (dependiente[i] - Y)^2
+  }
+  print(sum(unlist(lista))/(length(dependiente)-2))
+}
+```
+
+
+# Marco teorico
+
+¿Alguna vez te has preguntado que tan alto sera tu hijo al crecer?, pues no eres el unico, esta es una pregunta muy frecuente entre los padres y hasta los propios niños se lo preguntan: ¿algun dia sere tan alto como mi papa? o ¿tan alto como mi mama?, ademas de que la pregunta genera mucho morbo, es importante hacer una estimacion ya que los pediatras lo encuentrar muy util para asegurarse de que el niño esta creciendo correctamente.
+Hay varios factores que pueden afectar el crecimiento de una persona, tales como:
+
+**- Genetica**
+
+La genetica es un factor importantisimo para determinar la altura, los expertos en salud creen que el 80% de la altura de una persona es determinado solo por la genetica, el niño lleva en su información genética 2 variantes para una misma característica, una del padre y otra de la madre. Y el azar, será quien tenga la última palabra (además del resto de factores que influyen en el crecimiento de los niños).Como una regla general y es uno de los metodos para saber que altura podria tener el niño, es un promedio entre las alturas de los padres y a este resultado, en caso del niño varon hay que agregarle 6.35 cm y en el caso de la niña restarle 6.35 cm, pero esto solo aproxima la altura de los niños, lo que significa que existe un margen de error esperado, el cual es 10.16 cm, mas o menos de la estimacion echa. Otro metodo mas preciso para hacer esta prediccion es usar la "edad osea" del niño, determinada por una radiografia en la mano. Existen muchas otras formas de determinarla.
+Para el caso de este estudio vamos a hacer una prediccion usando metodos de regresion, sacando sus errores.
+
+**- Nutricion**
+
+Obtener una nutricion adecuada durante los años de crecimiento es algo fundamental para el desarrollo humano, incluyendo su altura.
+
+Una dieta basada en alimentos enteros y nutritivos puede garantizar que crezca hata la altura que sus genes podrian dictar. Por otro lado, una dieta deficiente pues producir a que se tenga una altura mas baja que los padres.
+
+**- Acceso a alimentos saludables**
+
+Comer sano en ciertas situaciones puede llegar a ser un lujo, y no es tan simple para todas las familias acceder a esto. Los niños que tengan un nivel socieconomico deficiente pueden estar en riesgo de falta de acceso a la nutricion, junto con un acceso deficiente a una atencion medica adecuada, por ejemplo en colombia existe algo que se llama: crecimiento y desarrollo, que es donde se le da una atencion especializada al desarrollo del niño, y el no poder acceder a esto puede que no se le detecte a tiempo alguna patologia que pueda afectar su desarrollo.
+
+**- Genero**
+
+Los niños crecen de una forma mas lenta que las niñas al inicio de sus vidas, debido a las diferencias en los hitos de la pubertad. Sin embargo, en general, los hombres adultos tienden a ser en promedio 14 centimetros mas altos en comparacion con las hembras adultas.
+
+**- Consideraciones hormonales**
+
+Durante la pubertad (proceso que suele ocurrir entre los 10 y 14 años para las niñas y entre los 12 y 16 para los varones), esta provoca cambios fisicos y afecta a cada sexo de una forma distinta. Las hormonas son esenciales para regular el crecimiento del cuerpo. Estos incluyen hormonas tiroideas, hormonas de crecimiento humano y hormonoas sexuales como las testosterona y el estrógeno.
+
+Cualquier anomalía en estas hormonas podría alterar el crecimiento, así como su altura total. Los niños que desarrollan hipotiroidismo (tiroides baja) o trastornos de la glándula pituitaria pueden experimentar una estatura más baja que el promedio en comparación con sus padres.
+
+En raras ocasiones, los trastornos hormonales pueden contribuir a ser más alto de lo normal. Por ejemplo, el gigantismo es causado por demasiadas hormonas de crecimiento humano producidas por tumores de la glándula pituitaria.
+
+**- Trastornos congénitos**
+
+Algunas condiciones presentes al nacer pueden dictar la altura de una persona. Por ejemplo, la acondroplasia (enanismo) es un trastorno raro del crecimiento óseo que es hereditario.
+
+Otro trastorno congénito que puede causar baja estatura se conoce como síndrome de Turner. Esta rara condición causa retrasos en la pubertad. A diferencia de la acondroplasia, el síndrome de Turner no es hereditario.
+
+Otros trastornos congénitos conducen a una estatura más alta de lo normal. Estos incluyen los síndromes de Marfan y Klinefelter.
+
+El síndrome de Marfan es causado por agrandamientos del tejido conectivo, mientras que el síndrome de Klinefelter ocurre cuando los hombres nacen con una copia adicional del cromosoma X.
+
+# Objetivo
+
+En este estudio, usaremos metodos de regresion estadistica para evidenciar que tan influyente es la altura de cada uno de los padres en la altura de sus hijos (evaluaremos cada sexo por aparte para ser mas precisos), y solo tomando en cuenta al hijo mayor; todo esto usando el programa estadistico **R studio**.
+
+# Nota importante antes de iniciar la lectura
+
+Para hacer una comparacion mas clara con los metodos usados en este trabajo y lo que pueden llegar a utilizar todas las personas para hacer las estimaciones, te invitamos a comparar los resultados de altura esperada del hijo (estimada) junto con la real, contrastando los resultados obtenidos aca con el metodo de las alturas promedio ya descrito en la seccion del marco teorico en el item de genetica.
+
+# Diseño del experimento
+
+Este experimento fue diseñado a partir del interes de saber que tan influyente es la altura de los padres vs a la de sus hijos, y para esto se cada equipo creo un formulario de google donde se encuestarian a 50 familias (por equipo), para este caso como fueron 7 equipos se lograron obtener datos de un total de 350 familias
+
+![](Imagenes/Texto/1.jpg)
+
+con ayuda de este formulario se tomaron las siguientes variables:
+
+- Fecha de nacimiento del padre
+
+- Fecha de nacimiento de la madre
+
+- Fecha de nacimiento del hijo mayor
+
+- Altura del padre
+
+- Altura de la madre
+
+- Altura del hijo
+
+- Fecha de expedicion de la cedula del padre
+
+- Fecha de expedicion de la cedula de la madre
+
+- Fecha de expedicion de la cedula del hijo
+
+- Tipo de sangre del padre
+
+- Tipo de sangre de la madre
+
+- Tipo de sangre del hijo
+
+- Genero del hijo mayor
+
+
+# Analisis
+
+```{r,echo = FALSE}
+Datos <- read.csv("Datos.csv")
+```
+
+
+## Ajuste de regresion lineal simple para los datos de altura de los hijos mayores con respecto a la de los padres
+
+### Hijos varones VS padres
+
+```{r, echo = FALSE}
+Y <- subset(Datos,X3=="Masculino",select = A3)
+X <- subset(Datos,X3=="Masculino",select = A1)
+```
+
+
+```{r, echo = FALSE}
+Y <- Y$A3
+X <- X$A1
+```
+
+
+```{r, echo = FALSE}
+r <- cor(X,Y)
+```
+
+#### Diagrama de dispersion
+
+```{r, echo = FALSE, message=FALSE,warning=FALSE}
+png(filename = "graficas/disp_padres_m.png", width = 800, height = 600)
+plot(X,Y, xlab = "Alturas padres", ylab = "Alturas hijos", main = "Hijos VS padres")
+
+regresion <- lm(Y~X)
+#summary(regresion)
+
+abline(regresion, col="blue")
+
+text(x = 185, y = 145, # Coordenadas
+     label = "Coeficiente de correlacion:", col = "red")
+
+text(x = 185, y = 140, # Coordenadas
+     label = "0.3217791")
+dev.off()
+```
+![](graficas/disp_padres_m.png)
+
+
+
+Podemos ver que hay algunos datos que estan muy alejados a la linea de dispersion, y tal vez se podria pensar en ellos como datos atipicos, ya sea porque algun hijo tiene enanismo o el dato fue mal diligenciado en el formulario. Esto se puede ver de una manera un poco mas clara con un Box-plot
+
+```{r, echo = FALSE,message=FALSE,warning=FALSE}
+png(filename = "graficas/box_padres_m.png", width = 800, height = 600)
+boxplot(X,Y)
+dev.off()
+```
+![](graficas/box_padres_m.png)
+
+- Donde 1 equivale a la altura de los padres y el 2 la altura de los hijos, y podemos ver que en la altura de los hijos hay varios valores atipicos, lo que confirma las sospechas, y se pudo llegar a haber presentado cualquiera de las 2 opciones de arriba.
+
+- Otra cosa que tal vez se podria llegar a pensar, es que se daria un mejor ajuste con un modelo no parametrico, pero aun asi en este caso vamos a trabajar con el modelo parametrico y sacar conclusiones acerca de eso.
+
+- El coeficiente de correlacion en este caso es de **0.3217791**, de este coeficiente sabemos que si es 1 o -1, es una correlacion fuerte (casi llegaria a formar una linea recta los datos, o la formaria), y mientras tienda a cero el valor la correlacion es cada vez mas debil, con el valor que tenemos podemos decir que es relativamente debil y esto explicaria la dispersion que se ve con respecto a la linea de regresion
+
+**Valores de la regresion**
+
+```{r, echo=FALSE}
+t_1 <- data.frame(Coeficientes = summary(regresion)$coefficients[,1], Std.Error = summary(regresion)$coefficients[,2], t_value = summary(regresion)$coefficients[,3],"Valor p" = c("1.66e-11",1.33e-05), Sig = c("(0, 0.001)","(0, 0.001)"))
+
+knitr::kable(t_1)
+```
+
+
+```{r, echo=FALSE}
+t_2 <- data.frame("Residual estandar error" = summary(regresion)[6])
+
+knitr::kable(t_2)
+```
+
+
+#### Modelo ajustado:
+
+$$Altura hijos = \hat{\beta_0} + \hat{\beta_1}*Altura\ padres$$
+$$Altura Hijos = 106.8166 + 0.3847537*Altura\ padres$$
+
+¿Que nos quiere decir este modelo?, que por cada centimetro que aumente la estadura del padre, se aumentara 0.3847537 centimetros la altura del hijo, pero tenemos que tener en cuenta algo, que para este modelo un valor logico para la altura del padre no es un valor de 0 centimetros, ya que no existen padres con esta altura, mas o menos podria empezar la altura de los padres con una altura de 145 centimetros
+
+#### Significancia de la regresion
+
+En esta prueba de hipotesis, veremos si la variable X (altura del padre) tiene influencia en la variable Y (altura de los hijos).
+
+$$H_0: \beta_1 = 0$$
+$$VS$$
+$$H_1: \beta_1 \neq 0$$
+
+Usaremos el siguiente estadistico de prueba:
+
+
+
+$$t_1 = \frac{0.3847537}{0.08582531} = 4.482986$$
+
+El valor **p** seria:
+
+
+
+
+$$valor-p = 2*P(T > 12.8965), con\ n-2\ grados\ de\ libertad$$
+
+$$valor-p = 1.331557*10^{-5}$$
+
+$$Tomando\ un\ nivel\ de\ significancia\ \alpha = 0.05,\ entonces\ podemos\ decir\ que\ hay\ suficiente\ evidencia\ para\ rechazar\ H_0,$$
+$$por\ lo\ tanto,\ la\ altura\ del\ padre\ si\ tiene\ influencia\ en\ la\ altura\ de\ un\ hijo\ varon$$
+
+**Histograma y Q-QPLOT con distribucion teorica normal**
+
+```{r, echo = FALSE}
+
+png(filename = "graficas/hist_padres_m.png", width = 400, height = 300)
+hist(regresion$residuals, freq = FALSE, col = "green",main = "Histograma de los residuales")
+lines(density(regresion$residuals), col = "red")
+dev.off()
+
+png(filename = "graficas/qq_padres_m.png", width = 400, height = 300)
+qqnorm(regresion$residuals)
+qqline(regresion$residuals)
+dev.off()
+```
+
+![](graficas/hist_padres_m.png)
+
+![](graficas/qq_padres_m.png)
+
+
+```{r}
+shapiro.test(regresion$residuals)
+```
+
+Con el test de shapiro- wilk, nos damos cuenta de que no se distribuye normal.
+
+Para analizar esto, debemos de recordar que los residuales es la diferencia entre el valor aproximado por el modelo y el real, y el histograma nos esta mostrando como su comportamiento.
+Como podemos ver en el Q-Q plot, hay puntos en el extremo izquierdo que estan por debajo de la linea, esto indica que hay una mayor concentración de valores en el extremo inferior de la distribución, es decir, valores más pequeños. Esto se puede interpretar como una distribución sesgada hacia la izquierda como podemos ver en el histograma.
+Tambien podemos ver, que en la parte izquierda del histograma los valores oscilan entre -20 y 20 y en su mayoria oscilan entre -10 y 10, que teniendo en cuenta que la altura de los hijos varian entre 120 y 170, es relativamente bueno el modelo para predecir la altura de los hijos.
+Ahora tomaremos un poco con pinzas el error que aparece en el histograma de un -50 aproximadamente, para este caso la altura del padre es de 185 centimetros, y el de el hijo es de 130 centimetros, el modelo predice una altura de 178, lo cual hace un error grandisimo, y se puede deber a 2 situaciones esto, un posible enanismo o un dato mal tomado.
+
+
+## Conclusiones
+
+- Para terminar, el modelo es bastante bueno para hacer la prediccion, pero hay que tener en cuenta que el valor resultante de la prediccion (altura del hijo) siempre sera menor a la variable predictora (altura del padre), pero como bien sabemos hay en muchos casos donde el hijo es mas alto que el padre, y esto lo podemos evidenciar en los datos ya que la mayoria de los errores son positivos.
+
+- Los valores atipicos estan en las alturas mas bajas de los hijos, hay hijos muy vajitos
+
+## Ajuste de regresion lineal simple para los datos de altura de las hijas mayores con respecto a la de los padres
+
+## Hijas VS padres
+
+```{r, echo = FALSE}
+Y <- subset(Datos,X3=="Femenino",select = A3)
+X <- subset(Datos,X3=="Femenino",select = A1)
+```
+
+
+```{r, echo = FALSE}
+Y <- Y$A3
+X <- X$A1
+```
+
+
+```{r, echo = FALSE}
+r <- cor(X,Y)
+```
+
+#### Diagrama de dispersion
+
+```{r, echo = FALSE, message=FALSE}
+png(filename = "graficas/disp_padres_f.png", width = 800, height = 600)
+plot(X,Y, xlab = "Alturas padres", ylab = "Alturas hijas", main = "Hijas VS padres")
+
+regresion <- lm(Y~X)
+#summary(regresion)
+
+abline(regresion, col="blue")
+
+text(x = 185, y = 145, # Coordenadas
+     label = "Coeficiente de correlacion:", col = "red")
+
+text(x = 185, y = 140, # Coordenadas
+     label = "0.3668548")
+dev.off()
+```
+
+![](graficas/disp_padres_f.png)
+
+A comparacion con el modelo anterio este tiene una relacion un poco mas fuerte, lo que significa que sus valores van a estar mas cercanos a la linea de regresion, y esto se puede evidencias en que los valores se ven un poco mas compactos y no tal vez tan dispersos como en el otro.
+
+Como en el anterior vamos a graficar un boxplot para ver datos atipicos y demas factores:
+
+```{r, echo = FALSE,message=FALSE,warning=FALSE}
+png(filename = "graficas/box_padres_f.png", width = 800, height = 600)
+boxplot(X,Y)
+dev.off()
+```
+
+![](graficas/box_padres_f.png)
+
+Donde 1 son los padres y 2 las hijas.
+
+Como ambos graficos no se traslapan se puede decir que las medianas son significativamente diferentes sus medianas, otra cosa que podemos decir es que la dispersion de ambos grupos es mas o menos similar. Y podemos ver unos cuantos valores atipicos.
+
+**Valores de la regresion**
+
+```{r, echo=FALSE}
+t_1 <- data.frame(Coeficientes = summary(regresion)$coefficients[,1], Std.Error = summary(regresion)$coefficients[,2], t_value = summary(regresion)$coefficients[,3],"Valor p" = c("< 2e-16",4.39e-07), Sig = c("(0, 0.001)","(0, 0.001)"))
+
+knitr::kable(t_1)
+```
+
+
+```{r, echo=FALSE}
+t_2 <- data.frame("Residual estandar error" = summary(regresion)[6])
+
+knitr::kable(t_2)
+```
+
+#### Modelo ajustado:
+
+$$Altura\ hijas = \hat{\beta_0} + \hat{\beta_1}*Altura\ padres$$
+$$Altura\ Hijas = 103.3694 + 0.3346572*Altura\ padres$$
+
+En este modelo podemos ver que por cada centimetro que aumente la altura del padre, la altura de la hija va a aumentar en 0.3346572 centimetros, pero hay que tener en cuenta que en el modelo para este caso especifico un valor logico no seria ni 10, ni 20, ni 30 centimetros la altura de un padre, sino que seria mas natural pensar en un valor minimo de digamos 145 centimetros para la altura del padre
+
+#### Significancia de la regresion
+
+En esta prueba de hipotesis, veremos si la variable X (altura del padre) tiene influencia en la variable Y (altura de las hijas).
+
+$$H_0: \beta_1 = 0$$
+$$VS$$
+$$H_1: \beta_1 \neq 0$$
+
+Usaremos el siguiente estadistico de prueba:
+
+
+
+$$t_1 = \frac{0.3346572}{0.063787} = 5.246479$$
+
+El valor **p** seria:
+
+
+
+
+$$valor-p = 2*P(T > 5.246479), con\ n-2\ grados\ de\ libertad$$
+
+$$valor-p = 4.39449*10^{-7}$$
+
+$$Tomando\ un\ nivel\ de\ significancia\ \alpha = 0.05,\ entonces\ podemos\ decir\ que\ hay\ suficiente\ evidencia\ para\ rechazar\ H_0,$$
+$$por\ lo\ tanto,\ la\ altura\ del\ padre\ si\ tiene\ influencia\ en\ la\ altura\ de\ su\ hija$$
+
+**Histograma y Q-QPLOT con distribucion teorica normal**
+
+```{r, echo = FALSE}
+png(filename = "graficas/hist_padres_f.png", width = 400, height = 300)
+hist(regresion$residuals, freq = FALSE, col = "green",main = "Histograma de los residuales")
+lines(density(regresion$residuals), col = "red")
+dev.off()
+
+png(filename = "graficas/qq_padres_f.png", width = 400, height = 300)
+qqnorm(regresion$residuals)
+qqline(regresion$residuals)
+dev.off()
+```
+
+![](graficas/hist_padres_f.png)
+
+![](graficas/qq_padres_f.png)
+
+```{r}
+sum(regresion$residuals>-10 & regresion$residuals<10,na.rm = TRUE)
+```
+
+
+En este podemos ver que el comportamiento es de una normal el de los residuales, a excepcion de 2 valores atipicos, como se vio tambien en el caso anterior la mayoria de residuales son positivos, por lo tanto, las alturas de las hijas es mayor a la del valor predicho.
+
+
+## Conclusiones
+
+Las alturas de los padres explican bastante bien la altura de las hijas y hasta lo hacen mejor que la de los hijos, ya que en total con un residual entre -10 y 10 hay 156 en los hijos, y en las hijas hay 163, lo que esto nos diria que hay un menor error residual en general para las hijas, pero igual tambien hay que tener en cuenta que hay un total de 179 mujeres y 176 hombres, una diferencia de 3 en este caso, "eliminando esta diferencia", aun asi, es una diferencia de 4 por lo que seria mejor
+
+# Referencias
+
+- https://www.healthline.com/health/is-height-genetic#other-factors
+
+- https://www.medicalnewstoday.com/articles/how-tall-will-i-be#predicting-a-childs-future-height
+
+- https://www.guiainfantil.com/blog/familia/los-ninos-heredan-el-peso-de-la-madre-y-la-altura-del-padre/#header0
+
+- https://acortar.link/fVnGJ3
