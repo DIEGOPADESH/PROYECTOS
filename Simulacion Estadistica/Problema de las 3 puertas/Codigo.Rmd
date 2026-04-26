@@ -1,0 +1,58 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+```{r}
+set.seed(123)  # Para reproducibilidad
+
+# Número de simulaciones
+n <- 100000
+
+# Inicializar contadores
+cambiar_gana <- 0
+quedarse_gana <- 0
+
+for (i in 1:n) {
+  # Colocar el carro en una puerta al azar
+  puertas <- c("chivo", "chivo", "carro")
+  puertas <- sample(puertas)  # Mezclar
+
+  # El jugador elige una puerta al azar
+  eleccion_inicial <- sample(1:3, 1)
+
+  # El anfitrión abre una puerta con un chivo que NO sea la elegida
+  puertas_restantes <- setdiff(1:3, eleccion_inicial)
+  puertas_chivo <- puertas_restantes[puertas[puertas_restantes] == "chivo"]
+  puerta_abierta <- sample(puertas_chivo, 1)
+
+  # Puerta a la que cambiar (la que queda)
+  opcion_cambio <- setdiff(1:3, c(eleccion_inicial, puerta_abierta))[1]
+
+  # Evaluar si gana cambiando
+  if (puertas[opcion_cambio] == "carro") {
+    cambiar_gana <- cambiar_gana + 1
+  }
+
+  # Evaluar si gana quedándose
+  if (puertas[eleccion_inicial] == "carro") {
+    quedarse_gana <- quedarse_gana + 1
+  }
+}
+
+# Probabilidades
+prob_cambiar <- cambiar_gana / n
+prob_quedarse <- quedarse_gana / n
+
+cat("Probabilidad de ganar cambiando de puerta:", prob_cambiar, "\n")
+cat("Probabilidad de ganar quedándose con la primera puerta:", prob_quedarse, "\n")
+
+if (prob_cambiar > prob_quedarse) {
+  cat(">>> Es MEJOR CAMBIAR de puerta.\n")
+} else if (prob_cambiar < prob_quedarse) {
+  cat(">>> Es MEJOR QUEDARSE con la puerta inicial.\n")
+} else {
+  cat(">>> Es INDIFERENTE cambiar o quedarse.\n")
+}
+```
+

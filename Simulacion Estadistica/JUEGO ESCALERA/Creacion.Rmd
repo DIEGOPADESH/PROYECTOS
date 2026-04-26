@@ -1,0 +1,306 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+
+\break
+
+
+```{r, echo=FALSE, message=FALSE}
+# Instalar si no tienes el paquete
+# install.packages("magick")
+
+library(magick)
+
+# Cargar la imagen
+img <- image_read("tablero.jpg")
+
+# Rotar 90 grados en sentido horario
+img_rotada <- image_rotate(img, 90)
+```
+
+# Tablero
+
+```{r, echo=FALSE, message=FALSE}
+# Mostrar la imagen rotada
+img_rotada
+
+```
+
+
+\break
+
+# Introduccion
+
+El presente trabajo tiene como objetivo analizar el comportamiento del clásico juego Serpientes y Escaleras mediante simulaciones computacionales, utilizando un tablero de dimensiones 40x40 (1600 casillas). Se ha modelado el juego incluyendo las mecánicas tradicionales de avance con dados, escaleras que permiten progresar rápidamente, y serpientes que hacen retroceder. La simulación explora dos escenarios principales: cuando juega una sola persona y cuando participan entre 2 y 10 jugadores de manera simultánea.
+
+El propósito de este estudio es identificar cuántos intentos (lanzamientos de dado) son necesarios para completar el juego, y determinar probabilidades de éxito relativas entre los jugadores cuando se enfrentan múltiples participantes. Para ello, se realizaron 1000 repeticiones del juego con un solo jugador y 29 repeticiones para cada configuración de 2 a 10 jugadores, debido a limitaciones computacionales.
+
+```{r, echo = FALSE}
+# Crear la matriz vacía
+tablero <- matrix(0, nrow = 40, ncol = 40)
+
+# Número actual a colocar
+numero <- 1
+
+# Recorremos desde la fila 40 hasta la 1 (última a primera)
+for (fila in 40:1) {
+  if ((40 - fila) %% 2 == 0) {
+    # Si es una fila "par" desde abajo, llenar de izquierda a derecha
+    for (col in 1:40) {
+      tablero[fila, col] <- numero
+      numero <- numero + 1
+    }
+  } else {
+    # Si es una fila "impar" desde abajo, llenar de derecha a izquierda
+    for (col in 40:1) {
+      tablero[fila, col] <- numero
+      numero <- numero + 1
+    }
+  }
+}
+```
+
+
+
+```{r, echo = FALSE}
+# Crear la matriz vacía del tablero
+tablero <- matrix(0, nrow = 40, ncol = 40)
+
+# Llenar el tablero en zigzag (de abajo hacia arriba)
+numero <- 1
+for (fila in 40:1) {
+  if ((40 - fila) %% 2 == 0) {
+    for (col in 1:40) {
+      tablero[fila, col] <- numero
+      numero <- numero + 1
+    }
+  } else {
+    for (col in 40:1) {
+      tablero[fila, col] <- numero
+      numero <- numero + 1
+    }
+  }
+}
+
+# Escaleras (casilla de origen = casilla destino)
+escaleras <- c(
+  `8` = 650,
+  `18` = 418,
+  `25` = 507,
+  `120` = 598,
+  `324` = 802,
+  `545` = 973,
+  `530` = 1008,
+  `863` = 1341,
+  `1033` = 1445,
+  `1309` = 1571
+)
+
+# Serpientes
+serpientes <- c(
+  `537` = 22,
+  `284` = 108,
+  `495` = 228,
+  `922` = 609,
+  `1096` = 586,
+  `940` = 654,
+  `892` = 803,
+  `1500` = 1147,
+  `1569` = 1086,
+  `1586` = 1131
+)
+
+# Función para mover al jugador según escaleras y serpientes
+mover_casilla <- function(casilla, escaleras, serpientes) {
+  casilla_str <- as.character(casilla)
+  if (casilla_str %in% names(escaleras)) {
+    return(escaleras[casilla_str])
+  } else if (casilla_str %in% names(serpientes)) {
+    return(serpientes[casilla_str])
+  } else {
+    return(casilla)
+  }
+}
+
+
+# Función para simular el juego
+simular_juego <- function() {
+  casilla <- 1
+  intento <- 0
+  
+  while (casilla < 1600) {
+    intento <- intento + 1
+    dado1 <- sample.int(6, 1)
+    dado2 <- sample.int(6, 1)
+    
+    if (casilla >= 1594) {
+      suma_dado1 <- casilla + dado1
+      if (suma_dado1 == 1600) {
+        casilla <- 1601  # salir del bucle
+        break
+      } else if (suma_dado1 <= 1600) {
+        casilla <- suma_dado1
+      }
+    } else {
+      casilla <- casilla + dado1 + dado2
+      casilla <- mover_casilla(casilla, escaleras, serpientes)
+    }
+  }
+  
+  intento
+}
+
+set.seed(42)
+# Ejecutar 1000 simulaciones
+lista_intentos <- replicate(1000, simular_juego())
+
+```
+
+
+# Simulacion un solo jugador
+
+En la simulación individual, se exploró cuántos turnos son necesarios para que un solo jugador alcance la casilla final. De las 1000 repeticiones del juego, se obtuvo:
+
+Mínimo de intentos: 40 lanzamientos (avance ideal, sin obstáculos).
+
+Máximo de intentos: 581 lanzamientos (alta penalización por serpientes).
+
+Se generó un histograma con la frecuencia de intentos requeridos para completar el juego, lo que permite visualizar la distribución de la duración del juego. Esta distribución muestra una gran variabilidad, lo cual es esperable dado el carácter aleatorio del movimiento y la influencia de las serpientes y escaleras.
+
+```{r, echo = FALSE}
+# Crear un data.frame con los valores mínimo y máximo
+resumen <- data.frame(
+  Minimo = min(lista_intentos),
+  Maximo = max(lista_intentos)
+)
+
+# Pasarlo a kable
+knitr::kable(resumen, format = "latex", caption = "Numerimo minimo y maximo de intentos 1 jugador")
+
+```
+
+
+```{r, echo = FALSE}
+hist(lista_intentos, col = "blue", xlab = "Numero de intentos", ylab = "Frecuencia", main = "Intentos necesarios para ganar \n de un solo jugador")
+```
+
+
+
+
+
+```{r, echo = FALSE}
+# Función que devuelve las escaleras y serpientes como listas nombradas
+crear_mapa <- function() {
+  escaleras <- c(
+    `8` = 650, `18` = 418, `25` = 507, `120` = 598, `324` = 802,
+    `545` = 973, `530` = 1008, `863` = 1341, `1033` = 1445, `1309` = 1571
+  )
+  
+  serpientes <- c(
+    `537` = 22, `284` = 108, `495` = 228, `922` = 609, `1096` = 586,
+    `940` = 654, `892` = 803, `1500` = 1147, `1569` = 1086, `1586` = 1131
+  )
+  
+  list(escaleras = escaleras, serpientes = serpientes)
+}
+
+# Simula una sola partida entre varios jugadores
+simular_partida <- function(num_jugadores = 2, mapa) {
+  posiciones <- rep(1, num_jugadores)
+  turno <- 1
+  
+  repeat {
+    dado1 <- sample.int(6, 1)
+    dado2 <- sample.int(6, 1)
+    
+    jugador <- turno
+    
+    if (posiciones[jugador] >= 1594) {
+      suma <- posiciones[jugador] + dado1
+      if (suma == 1600) return(jugador)
+      else if (suma <= 1600) posiciones[jugador] <- suma
+    } else {
+      posiciones[jugador] <- posiciones[jugador] + dado1 + dado2
+      posiciones[jugador] <- mover_casilla(posiciones[jugador], mapa$escaleras, mapa$serpientes)
+    }
+    
+    if (posiciones[jugador] == 1600) return(jugador)
+    
+    turno <- ifelse(turno == num_jugadores, 1, turno + 1)
+  }
+}
+
+# Simula muchas partidas y devuelve cuántas ganó cada jugador
+simular_torneo <- function(num_jugadores = 2, repeticiones = 1000, semilla = NULL) {
+  if (!is.null(semilla)) set.seed(semilla)
+  
+  mapa <- crear_mapa()
+  resultados <- integer(num_jugadores)
+  
+  for (i in 1:repeticiones) {
+    ganador <- simular_partida(num_jugadores, mapa)
+    resultados[ganador] <- resultados[ganador] + 1
+  }
+  
+  names(resultados) <- paste("Jugador", 1:num_jugadores)
+  return(resultados)
+}
+
+```
+
+
+
+
+
+
+# Simulación con 2 a 10 Jugadores
+
+Para evaluar la competencia entre múltiples jugadores, se simuló el juego con diferentes números de participantes (de 2 a 10). Cada configuración fue repetida 29 veces. Para cada jugador se calculó la probabilidad de ganar, entendida como la proporción de veces que un jugador fue el primero en llegar a la meta.
+
+Los resultados revelan cómo el número de jugadores afecta la distribución de victorias. En general, se observa que a medida que aumentan los participantes, la probabilidad de victoria se distribuye de manera más uniforme, aunque con ligeras variaciones que se deben al azar de las simulaciones.
+
+A continuación, se presenta un resumen por cada número de jugadores:
+
+
+
+```{r, echo = FALSE}
+rep = 29
+
+# Simulaciones de torneo para 2 a 10 jugadores
+for (n in 2:3) {
+  cat("=== Resultados para", n, "jugadores ===\n")
+  resultados <- simular_torneo(num_jugadores = n, repeticiones = rep, semilla = 42)
+  tabla = as.data.frame(round(resultados/rep, 2))
+  colnames(tabla) = "Probabilidad de exito"
+  print(tabla)
+  #cat("\n")
+}
+
+
+```
+
+
+A medida que aumenta el número de jugadores:
+
+La probabilidad de éxito individual disminuye, como es de esperarse al haber más competencia.
+
+En algunas configuraciones se observan jugadores con clara ventaja (por ejemplo, el Jugador 2 con 66% en 2 jugadores), lo cual puede ser atribuible al azar, especialmente con solo 29 repeticiones por configuración.
+
+Hay casos donde ciertos jugadores tienen muy bajas probabilidades (por ejemplo, 3% en jugadores 5 y 7 para 7 jugadores), lo que sugiere la necesidad de más simulaciones para estabilizar los resultados.
+
+Esto evidencia que, aunque el juego es en gran medida aleatorio, factores como el orden de turno y la disposición del tablero pueden afectar la probabilidad de ganar, especialmente con pocas repeticiones.
+
+
+# Conclusiones
+
+Conclusiones
+El juego de Serpientes y Escaleras presenta una gran variabilidad en la duración de cada partida, incluso con un solo jugador.
+
+En juegos multijugador, la probabilidad de éxito se reparte entre los jugadores, aunque con fluctuaciones importantes si el número de repeticiones es bajo.
+
+El análisis podría mejorarse con más simulaciones por configuración, especialmente para 2 a 10 jugadores, lo cual permitiría observar tendencias más estables y justas.
+
+Este tipo de simulación resulta útil para estudiar comportamientos probabilísticos en juegos de mesa y desarrollar estrategias de análisis en situaciones de incertidumbre.
+

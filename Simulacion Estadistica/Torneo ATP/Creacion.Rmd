@@ -1,0 +1,217 @@
+---
+output:
+  pdf_document:
+    toc: true
+  html_document: default
+  word_document:
+    toc: true
+---
+
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+options(repos = c(CRAN = "https://cran.rstudio.com"))
+```
+
+\break
+
+# Introducción
+
+Este documento presenta una simulación de un torneo de tenis masculino basado en los rankings ATP de los jugadores, utilizando un modelo probabilístico simple para estimar las probabilidades de victoria en cada partido.
+
+```{r, echo=FALSE}
+# Ranking ATP como lista para simulaciones
+ranking_jugadores <- list(
+  "I. ANDREEV" = 88, "B. BECKER" = 58, "C. BERLOCQ" = 71, "J. BLAKE" = 155,
+  "P. CUEVAS" = 64, "B. DABUL" = 89, "S. DEVVARMAN" = 79, "G. DIMITROV" = 81,
+  "M. FISH" = 16, "T. GABASHVILI" = 76, "G. GARCIA-LOPEZ" = 23, "R. HARRISON" = 130,
+  "J. ISNER" = 32, "R. KENDRICK" = 83, "I. KUNITSYN" = 96, "R. MELLO" = 78,
+  "K. NISHIKORI" = 66, "S. QUERREY" = 22, "A. RAMOS" = 111, "M. RUSSELL" = 90,
+  "R. SCHUETTLER" = 95, "H. ZEBALLOS" = 101, "M. ZVEREV" = 98
+)
+```
+
+
+# Función de Probabilidad
+
+La probabilidad de que un jugador \( j_1 \) venza a otro \( j_2 \) se modela como:
+
+$$
+P(j_1 \text{ gana a } j_2) = \frac{r_2}{r_1 + r_2}
+$$
+
+donde \( r_1 \) y \( r_2 \) son los rankings ATP de los jugadores. Rankings más bajos implican mayor desempeño.
+
+
+```{r}
+# Modelo de probabilidad
+calc_prob <- function(j1, j2) {
+  r1 <- ranking_jugadores[[j1]]
+  r2 <- ranking_jugadores[[j2]]
+  return(r2 / (r1 + r2))
+}
+```
+
+
+# Datos de Jugadores
+
+Para la simulación se tomó como base el listado de 23 tenistas con ranking oficial vigente al momento del torneo, descartando a aquellos cuya información estuviera incompleta o carecieran de clasificación reconocida. De acuerdo con el formato del cuadro, los cuatro jugadores mejor posicionados fueron eximidos de disputar la primera ronda, avanzando automáticamente a la segunda fase mediante un pase denominado BYE.
+
+```{r, echo= FALSE}
+
+# Crear data.frame en el orden del roster original del torneo
+ranking_df <- data.frame(
+  Jugador = c(
+    "I. ANDREEV", "B. BECKER", "C. BERLOCQ", "J. BLAKE",
+    "P. CUEVAS", "B. DABUL", "S. DEVVARMAN", "G. DIMITROV",
+    "M. FISH", "T. GABASHVILI", "G. GARCIA-LOPEZ", "R. HARRISON",
+    "J. ISNER", "R. KENDRICK", "I. KUNITSYN", "R. MELLO",
+    "K. NISHIKORI", "S. QUERREY", "A. RAMOS", "M. RUSSELL",
+    "R. SCHUETTLER", "H. ZEBALLOS", "M. ZVEREV"
+  ),
+  Ranking = c(
+    88, 58, 71, 155, 64, 89, 79, 81,
+    16, 76, 23, 130, 32, 83, 96, 78,
+    66, 22, 111, 90, 95, 101, 98
+  ),
+  Pais = c(
+    "RUS", "GER", "ARG", "USA", "URU", "ARG", "IND", "BUL",
+    "USA", "RUS", "ESP", "USA", "USA", "USA", "RUS", "BRA",
+    "JPN", "USA", "ESP", "USA", "GER", "ARG", "GER"
+  ),
+  row.names = NULL
+)
+
+# Mostrar la tabla con numeración automática y encabezados claros
+knitr::kable(ranking_df, caption = "Jugadores del Torneo ATP Houston 2011 (Orden del Roster Oficial)", row.names = TRUE)
+```
+
+
+
+# Cuadro del Torneo
+
+La estructura del torneo se modeló como una lista de enfrentamientos correspondientes a la primera ronda. En los casos en que uno de los jugadores tenía un pase (BYE), su contrincante avanzaba de forma directa. A partir de la segunda fase, los jugadores clasificados se emparejaban según su ubicación en el cuadro.
+
+```{r, echo= FALSE}
+# Cuadro inicial con BYEs
+cuadro_inicial <- list(
+  c("M. FISH", "BYE"), c("A. RAMOS", "B. DABUL"), c("I. ANDREEV", "M. RUSSELL"),
+  c("K. NISHIKORI", "C. BERLOCQ"), c("G. GARCIA-LOPEZ", "BYE"),
+  c("R. KENDRICK", "S. DEVVARMAN"), c("J. BLAKE", "R. MELLO"),
+  c("P. CUEVAS", "B. BECKER"), c("I. KUNITSYN", "M. ZVEREV"),
+  c("R. HARRISON", "H. ZEBALLOS"), c("J. ISNER", "BYE"),
+  c("G. DIMITROV", "R. SCHUETTLER"), c("T. GABASHVILI", "BYE"),
+  c("S. QUERREY", "BYE")
+)
+
+# Convertir la lista de emparejamientos en un data.frame
+cuadro_df <- do.call(rbind, lapply(cuadro_inicial, function(par) {
+  data.frame("Jugador 1" = par[1], "Jugador 2" = par[2], stringsAsFactors = FALSE)
+}))
+
+# Mostrar la tabla con kable
+knitr::kable(cuadro_df, caption = "Emparejamientos de la Primera Ronda del Torneo")
+```
+
+# Simulación del Torneo
+
+
+Se realizaron diez mil ejecuciones del torneo bajo el modelo probabilístico previamente definido. En cada iteración, se documentó el progreso de los jugadores desde la primera ronda hasta la definición del campeonato.
+
+
+```{r}
+simular_torneo <- function() {
+  ronda <- lapply(cuadro_inicial, function(par) {
+    if ("BYE" %in% par) return(setdiff(par, "BYE"))
+    p <- calc_prob(par[1], par[2])
+    return(ifelse(runif(1) < p, par[1], par[2]))
+  })
+  
+  while (length(ronda) > 1) {
+    nueva_ronda <- list()
+    i <- 1
+    while (i <= length(ronda)) {
+      j1 <- ronda[[i]]
+      if (i == length(ronda)) {
+        nueva_ronda[[length(nueva_ronda) + 1]] <- j1
+        break
+      }
+      j2 <- ronda[[i + 1]]
+      p <- calc_prob(j1, j2)
+      ganador <- ifelse(runif(1) < p, j1, j2)
+      nueva_ronda[[length(nueva_ronda) + 1]] <- ganador
+      i <- i + 2
+    }
+    ronda <- nueva_ronda
+  }
+  return(ronda[[1]])
+}
+```
+
+```{r}
+set.seed(2025)
+n_sim <- 10000
+ganadores <- replicate(n_sim, simular_torneo())
+tabla_resultados <- table(factor(ganadores, levels = names(ranking_jugadores)))
+probabilidades <- round(100 * tabla_resultados / n_sim, 2)
+ordenadas <- sort(probabilidades, decreasing = TRUE)
+
+knitr::kable(as.data.frame(ordenadas), col.names = c("Jugador", "Probabilidad (%)"))
+```
+
+
+# Análisis e Interpretación de Resultados
+
+Tras realizar \textbf{10\,000 simulaciones} del torneo utilizando el modelo probabilístico propuesto, se obtuvieron las siguientes conclusiones con base en las probabilidades de victoria de los jugadores:
+
+\begin{itemize}
+
+  \item \textbf{Favoritos principales al título:}
+  \begin{itemize}
+    \item \textbf{Mardy Fish} se posiciona como el principal candidato, con una probabilidad estimada de \textbf{31.61\%}.
+    \item \textbf{Sam Querrey} le sigue muy de cerca con un \textbf{29.16\%}, consolidando ambos más del \textbf{60\%} de las simulaciones exitosas.
+    \item \textbf{Guillermo García-López (16.59\%)} y \textbf{John Isner (11.69\%)} completan el grupo de favoritos, sumando en conjunto aproximadamente el \textbf{89\%} del total de campeonatos simulados.
+    \item Todos estos jugadores comenzaron el torneo con pase directo a la segunda ronda (BYE), lo cual representa una ventaja estructural significativa.
+  \end{itemize}
+
+  \item \textbf{Competidores destacados fuera del grupo élite:}
+  \begin{itemize}
+    \item \textbf{Teymuraz Gabashvili} sorprende con un \textbf{2.35\%}, superando incluso a jugadores de mejor ranking.
+    \item \textbf{Benjamin Becker (1.24\%)}, \textbf{Kei Nishikori (1.01\%)} y \textbf{Pablo Cuevas (0.89\%)} muestran un desempeño intermedio, con potencial de avanzar si los emparejamientos les favorecen.
+  \end{itemize}
+
+  \item \textbf{Jugadores con baja probabilidad:}
+  \begin{itemize}
+    \item Una gran cantidad de jugadores registran probabilidades por debajo del \textbf{1\%}, como \textbf{Ricardo Mello (0.68\%)}, \textbf{Carlos Berlocq (0.67\%)}, \textbf{Grigor Dimitrov (0.56\%)} y \textbf{Mischa Zverev (0.51\%)}.
+    \item También destacan \textbf{S. Devvarman}, \textbf{I. Kunitsyn}, \textbf{R. Schuettler}, y otros con resultados marginales entre \textbf{0.3\% y 0.5\%}.
+  \end{itemize}
+
+  \item \textbf{Mínimas probabilidades de título:}
+  \begin{itemize}
+    \item Al fondo de la distribución se ubican jugadores como \textbf{Albert Ramos (0.14\%)}, \textbf{Ryan Harrison (0.09\%)} y \textbf{James Blake (0.03\%)}, quienes rara vez logran campeonar en la simulación.
+    \item Esto puede explicarse tanto por su bajo ranking como por emparejamientos iniciales desfavorables.
+  \end{itemize}
+
+\end{itemize}
+
+En conjunto, los resultados reflejan un fuerte peso del ranking y la estructura del cuadro sobre las probabilidades de éxito. No obstante, la presencia de sorpresas en algunas simulaciones demuestra que, incluso en entornos competitivos estructurados, el azar mantiene un rol relevante.
+
+
+# Gráfico de Resultados
+
+```{r}
+barplot(ordenadas,
+        col = "orange",
+        las = 2,
+        cex.names = 0.7,
+        main = "Probabilidad de Ser Campeon",
+        ylab = "Porcentaje (%)")
+```
+
+Los resultados de la simulación evidencian el impacto significativo que tiene la posición en el ranking sobre las chances de triunfo en formatos de eliminación directa. Si bien se trata de un modelo básico que no incorpora factores como antecedentes entre jugadores o características del entorno, resulta útil para detectar patrones globales, anticipar contendientes con ventaja y reconocer escenarios donde podrían surgir resultados inesperados.
+
+
+
+
+
+
+

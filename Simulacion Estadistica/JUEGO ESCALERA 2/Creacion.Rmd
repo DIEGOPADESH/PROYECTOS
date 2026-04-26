@@ -1,0 +1,248 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+
+
+```{r, echo = FALSE}
+# Crear la matriz vacía
+tablero <- matrix(0, nrow = 40, ncol = 40)
+
+# Número actual a colocar
+numero <- 1
+
+# Recorremos desde la fila 40 hasta la 1 (última a primera)
+for (fila in 40:1) {
+  if ((40 - fila) %% 2 == 0) {
+    # Si es una fila "par" desde abajo, llenar de izquierda a derecha
+    for (col in 1:40) {
+      tablero[fila, col] <- numero
+      numero <- numero + 1
+    }
+  } else {
+    # Si es una fila "impar" desde abajo, llenar de derecha a izquierda
+    for (col in 40:1) {
+      tablero[fila, col] <- numero
+      numero <- numero + 1
+    }
+  }
+}
+```
+
+
+
+```{r, echo = FALSE}
+# Crear la matriz vacía del tablero
+tablero <- matrix(0, nrow = 40, ncol = 40)
+
+# Llenar el tablero en zigzag (de abajo hacia arriba)
+numero <- 1
+for (fila in 40:1) {
+  if ((40 - fila) %% 2 == 0) {
+    for (col in 1:40) {
+      tablero[fila, col] <- numero
+      numero <- numero + 1
+    }
+  } else {
+    for (col in 40:1) {
+      tablero[fila, col] <- numero
+      numero <- numero + 1
+    }
+  }
+}
+
+# Escaleras (casilla de origen = casilla destino)
+escaleras <- c(
+  `8` = 650,
+  `18` = 418,
+  `25` = 507,
+  `120` = 598,
+  `324` = 802,
+  `545` = 973,
+  `530` = 1008,
+  `863` = 1341,
+  `1033` = 1445,
+  `1309` = 1571
+)
+
+# Serpientes
+serpientes <- c(
+  `537` = 22,
+  `284` = 108,
+  `495` = 228,
+  `922` = 609,
+  `1096` = 586,
+  `940` = 654,
+  `892` = 803,
+  `1500` = 1147,
+  `1569` = 1086,
+  `1586` = 1131
+)
+
+# Función para mover al jugador según escaleras y serpientes
+mover_casilla <- function(casilla, escaleras, serpientes) {
+  casilla_str <- as.character(casilla)
+  if (casilla_str %in% names(escaleras)) {
+    return(escaleras[casilla_str])
+  } else if (casilla_str %in% names(serpientes)) {
+    return(serpientes[casilla_str])
+  } else {
+    return(casilla)
+  }
+}
+
+
+# Función para simular el juego
+simular_juego <- function() {
+  casilla <- 1
+  intento <- 0
+  
+  while (casilla < 1600) {
+    intento <- intento + 1
+    dado1 <- sample.int(6, 1)
+    dado2 <- sample.int(6, 1)
+    
+    if (casilla >= 1594) {
+      suma_dado1 <- casilla + dado1
+      if (suma_dado1 == 1600) {
+        casilla <- 1601  # salir del bucle
+        break
+      } else if (suma_dado1 <= 1600) {
+        casilla <- suma_dado1
+      }
+    } else {
+      casilla <- casilla + dado1 + dado2
+      casilla <- mover_casilla(casilla, escaleras, serpientes)
+    }
+  }
+  
+  intento
+}
+
+set.seed(42)
+# Ejecutar 1000 simulaciones
+lista_intentos <- replicate(1000, simular_juego())
+
+```
+
+
+
+```{r, echo=FALSE}
+library(ggplot2)
+
+crear_mapa <- function() {
+  escaleras <- c(
+    `8` = 650, `18` = 418, `25` = 507, `120` = 598, `324` = 802,
+    `545` = 973, `530` = 1008, `863` = 1341, `1033` = 1445, `1309` = 1571
+  )
+  
+  serpientes <- c(
+    `537` = 22, `284` = 108, `495` = 228, `922` = 609, `1096` = 586,
+    `940` = 654, `892` = 803, `1500` = 1147, `1569` = 1086, `1586` = 1131
+  )
+  
+  list(escaleras = escaleras, serpientes = serpientes)
+}
+
+# Aplica reglas de escaleras o serpientes
+mover_casilla <- function(pos, escaleras, serpientes) {
+  if (as.character(pos) %in% names(escaleras)) return(escaleras[as.character(pos)])
+  if (as.character(pos) %in% names(serpientes)) return(serpientes[as.character(pos)])
+  return(pos)
+}
+
+# Simula una sola partida y devuelve el número de lanzamientos del ganador
+simular_partida <- function(num_jugadores = 2, mapa) {
+  posiciones <- rep(1, num_jugadores)
+  lanzamientos <- rep(0, num_jugadores)
+  turno <- 1
+  
+  repeat {
+    jugador <- turno
+    otro <- ifelse(turno == 1, 2, 1)
+    
+    dado <- sample(1:6, 1)
+    lanzamientos[jugador] <- lanzamientos[jugador] + 1
+    
+    posiciones[jugador] <- posiciones[jugador] + dado
+    posiciones[jugador] <- mover_casilla(posiciones[jugador], mapa$escaleras, mapa$serpientes)
+    
+    # Si alcanza al otro jugador
+    if (posiciones[jugador] == posiciones[otro]) {
+      dado_retroceso <- sample(1:6, 1)
+      lanzamientos[otro] <- lanzamientos[otro] + 1
+      posiciones[otro] <- max(1, posiciones[otro] - dado_retroceso)
+      posiciones[otro] <- mover_casilla(posiciones[otro], mapa$escaleras, mapa$serpientes)
+    }
+    
+    if (posiciones[jugador] >= 1600) {
+      return(lanzamientos[jugador])
+    }
+    
+    turno <- ifelse(turno == num_jugadores, 1, turno + 1)
+  }
+}
+
+# Simula muchas partidas y guarda los lanzamientos del ganador
+simular_torneo_lanzamientos <- function(repeticiones = 1000, semilla = NULL) {
+  if (!is.null(semilla)) set.seed(semilla)
+  
+  mapa <- crear_mapa()
+  lanzamientos_ganador <- numeric(repeticiones)
+  
+  for (i in 1:repeticiones) {
+    lanzamientos_ganador[i] <- simular_partida(num_jugadores = 2, mapa)
+  }
+  
+  return(lanzamientos_ganador)
+}
+
+# Ejecutar simulación
+set.seed(42)
+resultados <- simular_torneo_lanzamientos(repeticiones = 1000)
+```
+
+
+Análisis extendido del juego Serpientes y Escaleras con regla de retroceso entre dos jugadores
+Este trabajo complementa el análisis original del juego clásico Serpientes y Escaleras, centrado ahora exclusivamente en partidas entre dos jugadores, e incorpora una nueva regla que modifica la dinámica del juego. A diferencia del estudio previo, que evaluaba tanto juegos individuales como competiciones entre múltiples jugadores (hasta 10), esta versión se enfoca en simular partidas entre dos jugadores bajo una mecánica especial de interacción directa.
+
+En esta nueva configuración, se mantiene el uso del tablero de 40x40 (1600 casillas) con escaleras y serpientes previamente definidas, así como el avance tradicional por medio del lanzamiento de un dado. Sin embargo, se introduce una regla de retroceso: si un jugador alcanza a su oponente en la misma casilla, el jugador alcanzado debe lanzar un dado y retroceder tantas casillas como indique el resultado. Este retroceso tiene un mínimo de la casilla 1, garantizando que el jugador no pueda bajar más allá del inicio del juego. Después de retroceder, el jugador afectado continúa participando con normalidad en los siguientes turnos.
+
+El objetivo principal de esta extensión es evaluar el número de lanzamientos que realiza el jugador ganador en cada partida y analizar su comportamiento estadístico. Para ello, se realizaron 1000 simulaciones independientes del juego entre dos jugadores. En cada simulación, se registró cuántos lanzamientos requirió el jugador que logró llegar primero a la casilla 1600, considerando tanto los lanzamientos de avance como los lanzamientos obligados por la regla de retroceso.
+
+Los resultados permitieron calcular el número promedio de lanzamientos del jugador ganador, así como representar gráficamente su distribución empírica. Esta información proporciona una mejor comprensión del impacto que tiene la regla de retroceso en la duración del juego, introduciendo un componente estratégico adicional en la dinámica competitiva del juego clásico.
+
+En comparación con la versión anterior, esta simulación no se limita a medir probabilidades de éxito entre jugadores, sino que permite analizar en detalle cómo se distribuye el esfuerzo (en términos de lanzamientos) requerido para ganar bajo condiciones de interacción directa entre oponentes.
+
+*Enunciado:*
+
+Suponga que dos jugadores, A y B, ponen la siguiente condicion en el juego de la escalera: Si un jugador alcanza al otro jugador en un lanzamiento del dado, el jugador alcanzado debe lanzar el dado y dependiendo del resultado pierde igual numero de casillas. Si se encuentra en la casilla 2 solo puede retroceder hasta la uno. Luego de retroceder vuelve y juega, ahora si, para avanzar! Cual es el numero promedio de lanzamientos del jugador ganador? Grafique la distribucion del numero de lanzamientos.
+
+
+```{r, echo=FALSE}
+# Estadísticas
+cat("Promedio de lanzamientos del jugador ganador:", mean(resultados), "\n")
+```
+
+
+```{r, echo=FALSE}
+# Gráfica
+ggplot(data.frame(Lanzamientos = resultados), aes(x = Lanzamientos)) +
+  geom_histogram(binwidth = 10, fill = "steelblue", color = "black") +
+  theme_minimal() +
+  labs(
+    title = "Distribución del número de lanzamientos del jugador ganador",
+    x = "Número de lanzamientos",
+    y = "Frecuencia"
+  )
+```
+
+```{r, echo=FALSE}
+knitr::kable(quantile(resultados, prob = seq(0, 1 , by = 0.25)), caption = "Cuantiles")
+```
+
+
+Podemos ver que en su mayoria el jugador ganador necesita una cantidad menos a 380 intentos para ganar el juego, y en promedio necesita 310 intentos para ganar.
+

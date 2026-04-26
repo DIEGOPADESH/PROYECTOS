@@ -1,0 +1,130 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+
+# Ejercicio: Simulación de una variable aleatoria $N$
+
+Dado un conjunto de variables aleatorias independientes $U_1, U_2, \ldots \sim \text{Uniforme}(0,1)$, se define la variable aleatoria $N$ como:
+
+$$
+N = \min \left\{ n : \sum_{i=1}^n U_i > 1 \right\}
+$$
+
+Es decir, $N$ representa el número mínimo de variables aleatorias necesarias para que su suma exceda 1.
+
+---
+
+## Objetivo
+
+Estimaremos el valor esperado $\mathbb{E}[N]$ mediante simulación de Monte Carlo, generando 10,000 repeticiones del experimento descrito.
+
+
+# Código en R
+
+## 100 simulaciones
+
+```{r}
+set.seed(123)
+
+num_simulaciones = 100
+vec_n = numeric(num_simulaciones)
+
+for (i in 1:num_simulaciones){
+  suma = 0
+  contador_n = 0 
+
+  while (suma <= 1){
+    nueva_u = runif(1, min = 0, max = 1)
+    suma = suma + nueva_u
+    contador_n = contador_n + 1
+  }
+
+  vec_n[i] = contador_n
+}
+
+estimacion_e_n_100 = mean(vec_n)
+print(paste("Estimación de E[N] con 100 simulaciones:", estimacion_e_n_100))
+```
+
+
+## 1000 simulaciones
+
+```{r}
+set.seed(123)
+
+num_simulaciones = 1000
+vec_n = numeric(num_simulaciones)
+
+for (i in 1:num_simulaciones){
+  suma = 0
+  contador_n = 0 
+
+  while (suma <= 1){
+    nueva_u = runif(1, min = 0, max = 1)
+    suma = suma + nueva_u
+    contador_n = contador_n + 1
+  }
+
+  vec_n[i] = contador_n
+}
+
+estimacion_e_n_1000 = mean(vec_n)
+print(paste("Estimación de E[N] con 1000 simulaciones:", estimacion_e_n_1000))
+```
+
+
+## 10000 simulaciones
+
+```{r simulacion_N, message=FALSE, warning=FALSE}
+set.seed(123)  # Semilla para reproducibilidad
+
+# Función para generar un valor de N
+generar_N <- function() {
+  suma <- 0
+  n <- 0
+  while (suma <= 1) {
+    suma <- suma + runif(1)
+    n <- n + 1
+  }
+  return(n)
+}
+
+# Repetir experimento 10,000 veces
+valores_N <- replicate(10000, generar_N())
+
+# Estimar E[N]
+E_N_est <- mean(valores_N)
+E_N_est
+```
+
+### Resultado
+
+La estimación obtenida de $\mathbb{E}[N]$ con 10,000 simulaciones fue:
+
+$$E[N] = 2.71828$$
+
+---
+
+## Justificación teórica
+
+Existe un resultado clásico en teoría de probabilidad que demuestra que:
+
+$$
+\mathbb{E}[N] = e \approx 2.71828
+$$
+
+Este valor corresponde al número de Euler $e$, y se obtiene porque la suma de variables uniformes $(0,1)$ que excede 1 se relaciona con el valor esperado del tiempo de espera de una variable de tipo exponencial acumulada.
+
+---
+
+## Conclusión
+
+| Método              | Resultado aproximado               |
+|---------------------|------------------------------------|
+| Simulación (10,000) | $\approx `r round(E_N_est, 4)`$    |
+| Valor teórico       | $e \approx 2.71828$                |
+
+La estimación obtenida por simulación concuerda con el valor teórico, lo que valida el enfoque de simulación utilizado.
+

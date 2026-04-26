@@ -1,0 +1,111 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+```{r}
+# Ensure necessary packages are installed and loaded
+# install.packages("diptest")
+# install.packages("ggplot2")
+library(diptest)
+library(ggplot2)
+
+# --- 1. Data Definition ---
+# Raw measurement data
+measurement_data <- c(5.307, 5.274, 5.334, 5.260, 5.234, 5.339, 5.306, 5.287, 5.286, 5.223,
+                      5.301, 5.299, 5.202, 5.187, 5.356, 5.201, 5.269, 5.312, 5.351, 5.261,
+                      5.209, 5.322, 5.283, 5.391, 5.371, 5.283, 5.248, 5.269, 5.248, 5.323,
+                      5.309, 5.286, 5.350, 5.245, 5.436, 5.224, 5.291, 5.251, 5.220, 5.328,
+                      5.294, 5.271, 4.843, 5.335, 5.299, 5.235, 5.276, 5.312, 5.306, 5.293,
+                      5.182, 5.274, 5.266, 5.384, 5.178, 5.315, 5.198, 5.356, 5.291, 5.312,
+                      5.300, 5.269, 5.366, 5.215, 5.306, 5.327, 5.302, 5.215, 5.307, 5.310,
+                      5.326, 5.268, 5.245, 5.277, 5.286, 5.324, 5.156, 5.286, 5.346, 5.279,
+                      5.230, 5.228, 5.268, 5.251, 5.326, 5.268, 5.346, 5.286, 5.292, 5.225,
+                      5.325, 5.268, 5.210, 5.284, 5.332, 5.313, 5.306, 5.270, 5.264, 5.262,
+                      5.046, 5.301, 5.242, 5.387, 5.253, 5.223, 5.246, 5.268, 5.268, 5.334,
+                      5.291, 5.226, 5.314, 5.318, 5.449, 5.251, 5.312, 5.306, 5.313, 5.316,
+                      5.381, 5.289, 5.217, 5.276, 5.258, 5.140, 5.215, 5.260, 5.327, 5.184,
+                      5.330, 5.300, 5.301, 5.261, 5.255, 5.238, 5.188, 5.298, 5.320, 5.316,
+                      5.269, 5.284, 5.320, 5.280, 5.280, 5.350, 5.340, 5.250, 5.300, 5.310,
+                      5.220, 5.260, 5.290, 5.350, 5.250, 5.290, 5.250, 5.290, 5.310, 5.320)
+
+# Convert to a data frame for ggplot2
+data_df <- data.frame(Value = measurement_data)
+```
+
+
+```{r}
+## 2. Visual Data Analysis with ggplot2
+
+### Histogram of Measurement Data
+
+ggplot(data_df, aes(x = Value)) +
+  geom_histogram(binwidth = 0.02, fill = "seagreen", color = "black", alpha = 0.7) +
+  labs(title = "Distribution of Measured Values",
+       x = "Measurement Value",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"),
+        axis.title = element_text(face = "bold"))
+```
+
+
+# Diagrama de densidad de datos de medición
+
+```{r}
+ggplot(data_df, aes(x = Value)) +
+  geom_density(fill = "darkred", alpha = 0.6, color = "darkred", linewidth = 1) +
+  labs(title = "Density Plot of Measurement Values",
+       x = "Measurement Value",
+       y = "Density") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"),
+        axis.title = element_text(face = "bold"))
+```
+
+
+# Test de multimodalidad
+
+
+
+```{r}
+# Perform Hartigan's Dip Test
+dip_test_result <- diptest::dip.test(measurement_data)
+
+cat("### Hartigan's Dip Test for Multimodality ###\n")
+print(dip_test_result)
+cat("\n")
+```
+
+
+
+# Test de normalidad
+
+```{r}
+# Perform Shapiro-Wilk Normality Test
+shapiro_wilk_result <- stats::shapiro.test(measurement_data)
+
+cat("### Shapiro-Wilk Test for Normality ###\n")
+print(shapiro_wilk_result)
+cat("\n")
+```
+
+
+
+# Evaluación visual de la normalidad (gráfico Q-Q)
+
+
+
+```{r}
+ggplot(data_df, aes(sample = Value)) +
+  stat_qq() +
+  stat_qq_line(color = "blue", linewidth = 1) +
+  labs(title = "Normal Q-Q Plot of Measurement Values",
+       x = "Theoretical Quantiles (Normal Distribution)",
+       y = "Sample Quantiles") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"),
+        axis.title = element_text(face = "bold"))
+```
+
+

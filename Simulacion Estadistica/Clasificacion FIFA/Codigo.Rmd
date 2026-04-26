@@ -1,0 +1,83 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r}
+# ---------- DATOS ----------
+equipos <- c("Sudáfrica", "México", "Uruguay", "Francia",
+             "Argentina", "Nigeria", "Corea", "Grecia",
+             "Inglaterra", "USA", "Argelia", "Eslovenia",
+             "Alemania", "Australia", "Serbia", "Ghana",
+             "Países Bajos", "Dinamarca", "Japón", "Camerún",
+             "Italia", "Paraguay", "Nueva Zelandia", "Eslovaquia",
+             "Brasil", "RDP de Corea", "Costa de Marfil", "Portugal",
+             "España", "Suiza", "Honduras", "Chile")
+
+puntos <- c(372, 921, 902, 1077,
+            1075, 883, 629, 1032,
+            1120, 948, 821, 810,
+            1157, 898, 950, 802,
+            1261, 778, 692, 887,
+            1183, 855, 409, 791,
+            1589, 293, 846, 1214,
+            1602, 887, 765, 974)
+
+# ---------- FUNCIÓN: COEFICIENTE DE VARIACIÓN ----------
+cv <- function(x) sd(x) / mean(x)
+
+# ---------- BÚSQUEDA DE LA MEJOR COMBINACIÓN ----------
+set.seed(42)
+mejor_cv <- Inf
+mejor_orden <- NULL
+mejor_puntos_grupos <- NULL
+
+for (i in 1:1000) {
+  orden <- sample(1:32)  # Reordenar países
+  puntos_ordenados <- puntos[orden]
+  puntos_grupos <- matrix(puntos_ordenados, ncol = 4, byrow = TRUE)
+  medias_grupo <- apply(puntos_grupos, 1, mean)
+  cv_actual <- cv(medias_grupo)
+  
+  # Si encontramos una división con menor CV, la guardamos
+  if (cv_actual < mejor_cv) {
+    mejor_cv <- cv_actual
+    mejor_orden <- orden
+    mejor_puntos_grupos <- puntos_grupos
+  }
+}
+
+# ---------- RESULTADOS: GRUPOS MÁS EQUILIBRADOS ----------
+# ---------- RESULTADOS: GRUPOS MÁS EQUILIBRADOS ----------
+equipos_ordenados <- equipos[mejor_orden]
+puntos_ordenados <- puntos[mejor_orden]
+
+equipos_grupos <- matrix(equipos_ordenados, ncol = 4, byrow = TRUE)
+puntos_grupos <- matrix(puntos_ordenados, ncol = 4, byrow = TRUE)
+
+cat("Grupos más equilibrados encontrados (menor CV):\n\n")
+for (i in 1:8) {
+  cat(paste("Grupo", i, ":\n"))
+  for (j in 1:4) {
+    cat(sprintf("  %-20s %4d\n", equipos_grupos[i, j], puntos_grupos[i, j]))
+  }
+  cat("\n")
+}
+
+
+cat("\nCoeficiente de variación de los promedios por grupo:", round(mejor_cv, 4), "\n")
+
+# ---------- PRUEBA DE KRUSKAL-WALLIS ----------
+puntajes <- as.vector(mejor_puntos_grupos)
+grupos <- rep(1:8, each = 4)
+
+cat("\nResultado de la prueba de Kruskal-Wallis:\n")
+print(kruskal.test(puntajes ~ as.factor(grupos)))
+
+```
+
+
+
+
+El coeficiente de variación (CV) es una medida más adecuada que la media, la mediana o la desviación estándar para evaluar la equidad entre grupos porque considera tanto la variabilidad como la magnitud de los valores. A diferencia de la media o la mediana, que solo indican el nivel central, el CV muestra cuán homogéneos o desiguales son los promedios de los grupos entre sí, independientemente de si esos promedios son altos o bajos. Además, al ser una medida relativa y sin unidades, permite comparar directamente distintas clasificaciones, detectando desequilibrios en la distribución del rendimiento grupal que otras medidas no evidencian. En este análisis, se seleccionó la combinación de grupos con el menor coeficiente de variación entre los promedios, lo que refleja una distribución balanceada de niveles competitivos. Complementariamente, se aplicó la prueba no paramétrica de Kruskal-Wallis para contrastar si existían diferencias significativas entre los grupos formados, obteniendo un valor p de 0.7537, por lo que se aceptó la hipótesis nula. Esto indica que no hay evidencia estadística de diferencias significativas entre grupos, lo que respalda que la clasificación encontrada es justa y equilibrada.

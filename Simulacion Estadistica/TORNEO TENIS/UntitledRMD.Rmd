@@ -1,0 +1,133 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+
+
+```{r}
+# Cargar el paquete dplyr, que se usará para manipulación de datos
+library(dplyr)
+
+```
+
+
+```{r}
+# Definir la función que calcula la probabilidad de victoria de un jugador A sobre B
+# basada en sus puntajes (más puntos implican mayor probabilidad de ganar)
+prob_victoria <- function(pA, pB) {
+  return(pA / (pA + pB))  # Fórmula simple basada en proporción de puntos
+}
+
+```
+
+
+```{r}
+# Crear los nombres de los jugadores como "Jugador1", "Jugador2", ..., "Jugador20"
+jugadores = paste0("Jugador", 1:20)
+
+# Asignarles puntajes del 20 al 1 (Jugador1 tiene 20 puntos, Jugador20 tiene 1)
+puntos = 20:1
+
+# Crear un data frame llamado 'tabla' con los nombres de jugadores y sus puntos iniciales
+tabla = data.frame(jugadores, puntos)
+```
+
+
+*NOTA: Este código no resuelve empates entre los dos primeros jugadores*
+
+*Si dos jugadores tienen los mismos puntos, el que aparezca primero en la tabla será considerado como el mejor.*
+
+
+
+```{r}
+# Número de veces que se simulará el torneo completo
+simulaciones = 1000
+```
+
+
+```{r}
+# Establecer semilla para reproducibilidad
+set.seed(123)
+
+simular_torneo <- function(tabla) {
+  # Se trabaja sobre una copia del data frame original para no modificar el original
+  tabla_aux <- tabla
+  
+  # Se repite 20 veces, cada iteración simula una ronda o proceso evolutivo del torneo
+  for (i in 1:20) {
+    a <- 1           # Índice del primer jugador en la tabla
+    b <- 20          # Índice del último jugador en la tabla
+    
+    # Emparejar jugadores desde los extremos (el mejor contra el peor, segundo mejor contra el segundo peor, etc.)
+    while (a < b) {
+      # Calcular la probabilidad de que el jugador 'a' le gane al jugador 'b'
+      pro <- prob_victoria(tabla_aux$puntos[a], tabla_aux$puntos[b])
+      
+      # Obtener los nombres de los jugadores involucrados
+      jugador_a <- as.character(tabla_aux$jugadores[a])
+      jugador_b <- as.character(tabla_aux$jugadores[b])
+      
+      # Elegir aleatoriamente al ganador según la probabilidad calculada
+      ganador <- sample(c(jugador_a, jugador_b), 1, prob = c(pro, 1 - pro))
+      
+      # Buscar el índice del ganador en la tabla y sumar un punto a su puntaje
+      indice_ganador <- which(tabla_aux$jugadores == ganador)
+      tabla_aux$puntos[indice_ganador] <- tabla_aux$puntos[indice_ganador] + 1
+      
+      # Pasar al siguiente par de jugadores
+      a <- a + 1
+      b <- b - 1
+      
+      # Reordenar la tabla de jugadores según puntaje descendente
+      tabla_aux <- tabla_aux %>% arrange(desc(puntos))
+    }
+  }
+  
+  # Al finalizar el torneo, retornar el nombre del jugador con más puntos
+  # (ubicado en la primera fila por el orden descendente)
+  return(as.character(tabla_aux$jugadores[1]))
+}
+
+```
+
+
+```{r}
+# Usar replicate() para simular 1000 torneos y guardar al ganador de cada torneo
+ganadores <- replicate(simulaciones, simular_torneo(tabla))
+```
+
+
+
+```{r}
+# Contar la frecuencia con la que cada jugador ganó
+# Dividir entre el número de simulaciones para obtener proporciones (probabilidades)
+resultado_final = table(ganadores) / simulaciones
+```
+
+Este análisis indica qué tan seguido cada jugador termina como campeón tras simular el torneo 1000 veces. Los jugadores con más puntos al inicio tienen mayor probabilidad
+
+
+```{r}
+# Mostrar la tabla con la probabilidad de ganar de cada jugador
+resultado_final
+```
+
+
+
+
+```{r}
+barplot(resultado_final)
+```
+
+
+Como podemos ver el jugador 1 tiene una probabilidad mucho mayor de ganar el torneo por el tipo de formato, si fuera un todos contra todos las probabilidades serian distintos ya que por ejemplo los primeros 2 jugadores de tabla al ser los mejores tendrian una probabilidad casi del 50% de cada uno gane.
+
+
+
+
+
+
+
+
+

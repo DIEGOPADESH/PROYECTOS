@@ -1,0 +1,82 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+
+- Generar 50 numeros aleatorios de una exponencial (lambda = 1) en forma iconica.
+
+```{r}
+set.seed(123)
+rexp(50, rate = 1)
+```
+
+
+```{r}
+hist(rexp(50, rate = 1))
+```
+
+
+
+- Usar bolitas con numeros del 1 al 9 y sacar 50 numeros pseudoaleatorios de 4 digitas (sacar una, escribir el numero y meterla nuevamente, sacar otra y asi hasta formar 4 digitos, hacerlo 50 veces)
+
+```{r}
+set.seed(123)
+
+digito1 = sample(1:9, 50, replace = TRUE)
+digito2 = sample(1:9, 50, replace = TRUE)
+digito3 = sample(1:9, 50, replace = TRUE)
+digito4 = sample(1:9, 50, replace = TRUE)
+
+
+
+vector = as.numeric(paste0(digito1, digito2, digito3, digito4))
+
+vector
+```
+
+
+- Usando el teorema volverlos exponenciales
+
+
+
+$$\mu = F(x) = 1 - e^{-\lambda x}$$
+
+
+$$\mu_1 = F(x) = 1 - e^{-1x_1}$$
+
+
+$$1 - \mu_1 = e^{-x1}$$
+
+
+
+$$ln(1 - \mu_1) = -x_1 \overset{}{\rightarrow} x_1 = -ln(1 - \mu_1) \overset{}{\rightarrow} x_1 = ln(\mu_1)$$
+
+
+
+Dado que $\mu$ se distribuye uniformemente entre 0 y 1, $(1-\mu)$ también se distribuye uniformemente entre 0 y 1. Por lo tanto, podemos simplificar la fórmula reemplazando $(1-\mu)$ con otra variable aleatoria uniforme $\mu \sim U(0,1)$:
+
+$x1 = -ln(\mu_1)$
+
+
+
+```{r}
+set.seed(123)
+vector2 = runif(50, 0, 1)
+
+mu = 1 - exp(-vector2)
+
+x = -log(mu)
+```
+
+
+
+```{r}
+x
+
+ks.test(x, "pexp", rate = 1)
+```
+
+El resultado de la prueba de Kolmogorov-Smirnov (D = 0.36999, p-value = 1.195e-06) indica que tus datos no provienen de una distribución exponencial con la tasa que especificaste. El valor p es muy bajo, lo que significa que la diferencia entre la distribución de tus datos y la distribución exponencial teórica es estadísticamente significativa.
+
+
