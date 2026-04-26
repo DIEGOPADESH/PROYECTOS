@@ -1,0 +1,309 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+toc: TRUE
+---
+
+\pagebreak
+
+```{r}
+#if(!require(leaps)){install.packages("leaps"); library(leaps)}
+
+library(leaps)
+
+source("Functions.R")
+
+#myAllRegTable(model)
+```
+
+
+# Orden de corridas
+
+```{r}
+#Number of replicates
+n = 5
+
+#Number of levels for Material
+a = 2
+
+#Number of levels for type of Tamaño
+b = 2
+
+# Number of levels for Lanzadores
+
+c = 2
+
+##############
+
+Material = c("Block", "Resma")
+
+Tamaño = c("Carta", "Oficio")
+
+Lanzador = c("Diseñador1", "Diseñador2")
+
+
+posi = cbind(rep(1:2, each = a), rep(1:2, b), rep(rep(1:2, each = c), c))
+
+set.seed(123)
+  
+posi.ran = sample(rep(1:(a*b*c), n), size = a*b*c*n, replace = FALSE)
+
+#########################################################################
+
+List.exec <- c()
+
+lan1cas1 <- n+1
+lan2cas1 <- n+1
+lan1cas2 <- n+1
+lan2cas2 <- n+1
+lan1cas3 <- n+1
+lan2cas3 <- n+1
+lan1cas4 <- n+1
+lan2cas4 <- n+1
+
+for (i in 1:(a*b*c*n)){
+  mat <- Material[posi[posi.ran[i],1]]
+  
+  tam <- Tamaño[posi[posi.ran[i],2]]
+  
+  lan <- Lanzador[posi[posi.ran[i],3]]
+  
+  # CASO 1
+  if(mat == "Block" & tam == "Carta"){
+    
+    if (lan == "Diseñador1"){
+      lan1cas1 <- lan1cas1-1
+      if (lan1cas1 <= 0){
+        lan <- "Diseñador2"
+      }
+    }else{
+      lan2cas1 <- lan2cas1-1
+      if (lan2cas1 <= 0){
+        lan <- "Diseñador1"
+      }
+      
+    }
+    
+  }
+  
+  # CASO 2
+  if(mat == "Block" & tam == "Oficio"){
+    
+    if (lan == "Diseñador1"){
+      lan1cas2 <- lan1cas2-1
+      if (lan1cas2 <= 0){
+        lan <- "Diseñador2"
+      }
+    }else{
+      lan2cas2 <- lan2cas2-1
+      if (lan2cas2 <= 0){
+        lan <- "Diseñador1"
+      }
+      
+    }
+    
+  }
+  
+  # CASO 3
+  if(mat == "Resma" & tam == "Carta"){
+    
+    if (lan == "Diseñador1"){
+      lan1cas3 <- lan1cas3-1
+      if (lan1cas3 <= 0){
+        lan <- "Diseñador2"
+      }
+    }else{
+      lan2cas3 <- lan2cas3-1
+      if (lan2cas3 <= 0){
+        lan <- "Diseñador1"
+      }
+      
+    }
+    
+  }
+  
+  # CASO 4
+  if(mat == "Resma" & tam == "Oficio"){
+    
+    if (lan == "Diseñador1"){
+      lan1cas4 <- lan1cas4-1
+      if (lan1cas4 <= 0){
+        lan <- "Diseñador2"
+      }
+    }else{
+      lan2cas4 <- lan2cas4-1
+      if (lan2cas4 <= 0){
+        lan <- "Diseñador1"
+      }
+      
+    }
+    
+  }
+  
+  List.exec <- append(List.exec, paste(mat, tam, lan))
+}
+  
+List.exec
+```
+
+
+# Potencia de la prueba
+
+
+```{r}
+piloto <- c(
+  mean(c(1.20, 1.22)), mean(c(1.52, 1.56)), 
+  mean(c(1.39, 1.46)), mean(c(1.73, 1.68)),
+  mean(c(1.66, 1.64)), mean(c(1.32, 1.24)),
+  mean(c(1.39, 1.43)), mean(c(1.32, 1.41)),
+  mean(c(1.65, 1.66)), mean(c(1.38, 1.40)),
+  mean(c(1.53, 1.44)), mean(c(1.45, 1.40))
+  )
+
+piloto
+```
+
+
+```{r}
+library(daewr)
+rmin <- 2 # smallest number of replicates
+rmax <- 8 # largest number of replicates
+sigma <- sd(piloto)
+alpha <- 0.05
+Delta <- 0.5
+nlev <- 8
+nreps <- c(rmin:rmax)
+power <- Fpower1(alpha, nlev, nreps, Delta, sigma)
+options(digits = 5)
+knitr::kable(power)
+```
+
+# Modelo - Respuesta (Tiempo de vuelo)
+
+```{r}
+ayuda <- c(mean(c(1.42, 1.44)), mean(c(1.46, 1.41)), mean(c(2.11, 2.01)), mean(c(1.46, 1.48)),
+            mean(c(2.46, 2.34)), mean(c(1.71, 1.64)), mean(c(2.24, 2.06)), mean(c(1.26, 1.21)),
+            mean(c(2.56, 2.46)), mean(c(1.25, 1.12)), mean(c(1.12, 1.14)), mean(c(1.52, 1.59)),
+            mean(c(1.45, 1.41)), mean(c(2.05, 1.91)), mean(c(1.98, 2.09)), mean(c(2.11, 2.16)),
+            mean(c(1.98, 2.04)), mean(c(1.26, 1.14)), mean(c(2.96, 2.84)), mean(c(2.76, 2.71)),
+            
+            mean(c(2.25, 2.26)), mean(c(1.52, 1.33)), mean(c(1.91, 2.00)), mean(c(1.33, 1.56)),
+            mean(c(1.70, 1.61)), mean(c(1.45, 1.44)), mean(c(1.84, 1.83)), mean(c(1.39, 1.30)),
+            mean(c(2.82, 2.81)), mean(c(1.33, 1.29)), mean(c(1.78, 1.61)), mean(c(1.59, 1.51)),
+            mean(c(2.43, 2.44)), mean(c(1.32, 1.21)), mean(c(1.79, 1.83)), mean(c(1.72, 1.80)),
+            mean(c(1.59, 1.68)), mean(c(2.62, 2.56)), mean(c(3.35, 3.43)), mean(c(1.52, 1.54))
+            )
+
+FINAL <- as.data.frame(matrix(cbind(List.exec, ayuda),ncol = 2, nrow = 40))
+```
+
+\pagebreak
+
+```{r}
+matrix(List.exec, ncol = 1, nrow = 40)
+```
+
+
+```{r}
+Tiempo <- c(1.675, 2.06,   1.445, 2.255,
+            1.185, 2.4,    1.695, 2.815,
+            1.555, 2.15,   1.55, 2.435,
+            2.035, 2.9,    1.81, 2.59,
+            2.135, 2.735,  1.635, 3.39,
+            
+            
+            1.43, 1.835,   1.43, 2.51,
+            1.2, 1.345,    1.435, 1.98,
+            1.655, 1.265,  1.47, 2.01,
+            1.445, 1.76,   1.235, 1.425,
+            1.31, 1.53,    1.13, 1.955)
+
+# VA EN FILAS
+Material <- factor(rep(c("Block", "Resma"), each = 20))
+
+# COLUMNAS
+Tamaño <- factor(rep(c("Carta", "Oficio", "Carta", "Oficio"), 10))
+
+# BLOQUES
+Diseñador <- factor(rep(c("Diseñador1", "Diseñador2"), each = 2))
+Diseñador <- rep(Diseñador, 10)
+
+model <- lm(Tiempo ~ Material + Tamaño + Material*Tamaño + Diseñador)
+anova(model)
+```
+
+
+## Modelo reducido
+
+```{r}
+model <- lm(Tiempo ~ Material + Tamaño + Material*Tamaño)
+anova(model)
+```
+
+## Prueba de supuestos
+
+### Normalidad
+
+```{r}
+myQQnorm(model, xlab = "Cuantiles teoricos",
+         ylab = "Cuantiles muestrales", pch=20)
+```
+
+
+```{r}
+shapiro.test(model$residuals)
+```
+
+
+### Varianza constante
+
+```{r}
+# Cálculo de residuales estudentizados y valores ajustados
+res.stud <- round(rstandard(model), 4)
+yhat <- round(model$fitted.values, 4)
+# Gráfico de Residuales estudentizados vs. Valores
+# ajustados
+plot(yhat, res.stud, xlab = "Fitted values", ylab = "Residuals",
+main = "Fitted values VS Residuals")
+abline(h = 0, lty = 2, col = 2)
+```
+
+```{r}
+bartlett.test(Tiempo, Material)
+```
+
+
+```{r}
+library(lawstat)
+levene.test(Tiempo, Material)
+```
+
+
+## Diferencia de medias
+
+```{r}
+TukeyHSD(aov(Tiempo ~ Material + Tamaño + Material*Tamaño))
+```
+
+
+## Grafico de interaccion
+
+```{r}
+interaction.plot(Material, Tamaño, Tiempo)
+```
+
+
+
+$$y_{ik} = \mu + \tau_i + \beta_j + (\tau\beta)_{ij} + \delta_k + \epsilon_{ijk}
+\left\{\begin{matrix}
+i = 1, 2\\ 
+j = 1, 2\\ 
+k = 1, 2
+\end{matrix}\right.$$
+
+$$\epsilon_{ijk} \overset{iid}\sim N(0, \sigma^2)$$
+
+Donde $\tau_i$ representa el efecto del material del avion, $\beta_j$ representa el efecto del tamaño del avión, $(\tau\beta)_{ij}$ es la interacción, $\delta_k$ es el efector del diseñador del avión (bloque) y $\epsilon_{ijk}$ es el componente de error.
+
+
