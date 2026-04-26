@@ -1,0 +1,817 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, echo=FALSE, message=FALSE}
+library(tidyverse)
+library(factoextra)
+```
+
+
+```{r, echo=FALSE}
+uno <- read.table("Acopla.txt", header=T)
+# Copiar el siguiente codigo en R sin modificar nada 
+library(splitstackshape)
+genera <- function(cedula){ 
+set.seed(cedula) 
+aux <- stratified(uno, "CAT_IMC", 200/2100) 
+aux 
+}
+```
+
+La cedula a utilizar es la correspondiente al estudiante Juan Diego Espinosa Hernandez, la cual es: **1000192466**
+
+Estas son las variables que contiene la base de datos:
+
+```{r, echo=FALSE}
+tabla1 <- data.frame(
+  "N_variable" = c("SEXO", "P1", "P7", "P16", "P22", "P25", "P27", "P29", "P38", "CAT_IMC"),
+  
+  "Descripcion" = c("Hom, Muj", "Masa, en kg", "Perímetro muslo mayor, en cm", "Perímetro 
+abdominal cintura, en cm)", "Anchura caderas, en cm", "Distancia Nalga a fosa poplítea, 
+en cm", "Longitud promedio de los pies, en cm", "Longitud promedio de las manos, en 
+cm", "Altura, en cm", "Delgado, Normal, Obeso")
+)
+
+knitr::kable(tabla1, format = "markdown", caption = "Variables base de datos")
+```
+
+
+```{r, echo = FALSE}
+datos <- genera(92466)
+```
+
+
+
+# Parte A
+
+En el caso de el numero de cedula elegido, los primeros 5 digitos no nulos son: **11924**, donde cada digito corresponde a un $d_i$.
+
+Sea $X = (X_1, X_2, X_3, X_4, X_5)$ un vector aleatorio tal que $X \sim N_5 (\mu, \Sigma)$, donde $\mu = (1, 1, 9, 3, 5)'$ es el vector de medias y $\Sigma$ esta dado por: 
+
+$$
+\Sigma = \begin{pmatrix}
+ \textbf{1}&  4&  6&  1& 6\\ 
+ 4&  \textbf{1}&  9&  7& 3\\ 
+ 6&  9&  \textbf{9}&  10& 5\\ 
+ 1&  7&  10&  \textbf{2}& 8\\ 
+ 6&  3&  5&  8& \textbf{4}
+\end{pmatrix}
+$$
+
+## Punto 1
+
+$$Defina\ el\ vector\ \textbf{Y} = \begin{bmatrix}
+Y_1\\ 
+Y_2
+\end{bmatrix} = \begin{bmatrix}
+X_1 - 2X_5 + 1\\ 
+X_2 - X_3 + 3X_4 + 2
+\end{bmatrix}. Halle\ la\ distribucion\ del\ vector\ Y$$
+
+```{r, echo=FALSE}
+#{width=70% height=90%}
+```
+
+
+![](PARTE A/1.jpg){width=80% height=80%}
+
+## Punto 2
+
+$$ Considere\ los\ sub-vectores: \textbf{X}^{(1)} = \begin{bmatrix}
+X_2\\ 
+X_4\\
+X_5
+\end{bmatrix}; \textbf{X}^{(2)} = \begin{bmatrix}
+X_1\\ 
+X_3
+\end{bmatrix}$$
+
+### a)
+
+$$Halle\ la\ distribucion\ de\ \textbf{X}^{(1)}\ y\ de\ \textbf{X}^{(2)}$$
+
+![](PARTE A/2.jpg){width=90% height=90%}
+
+### b)
+
+$$Halle\ la\ distribucion\ condicional\ de\ \textbf{X}^{(1)}\ dado\ \textbf{X}^{(2)} = \binom{1}{2}$$
+
+![](PARTE A/3.jpg){width=90% height=90%}
+
+![](PARTE A/4.jpg)
+
+
+
+# Parte B
+
+Para todos los efectos del vector $\textbf{X} = (P_1, P_7, P_{16}, P_{22}, P_{25}, P_{27}, P_{29}, P_{38})$, contiene las variables continuas de su base de datos. Por notacion sea $\mu = (\mu_1, \mu_2, \mu_3, \mu_4, \mu_5, \mu_6, \mu_7, \mu_8)$ el respectivo vector de medias y $\Sigma$ su matriz de covarianzas.
+
+
+Hacemos prueba de normalidad multivariada con Royston's test
+
+```{r, echo=FALSE}
+attach(datos)
+
+auxiliar <- data.frame(P1, P7, P16, P22, P25, P27, P29, P38)
+
+# VECTOR DE MEDIAS ESTIMADAS
+
+x_barra <- t(t(c(mean(P1), mean(P7), mean(P16), mean(P22), mean(P25), mean(P27), mean(P29), mean(P38))))
+
+detach()
+
+result <- MVN::mvn(data = auxiliar, mvnTest="royston")
+knitr::kable(result$multivariateNormality, "markdown", caption = "Normalidad")
+```
+
+
+## Punto 1
+
+Primero debemos tener en cuenta que nuestros datos no provienen de una distribucion normal y para hacer la prueba de hipotesis debemos de tener en cuenta que desconocemos tanto el vector de medias $\mu$ como la matriz de varianzas y covarianzas, por lo tanto debemos estimar ambos a partir de los datos, ya que tenemos conocimiento acerca de esto procederemos a definir los siguientes elementos para hacer la prueba de hipotesis $\mu = \mu_0$, la cual se refiere al siguiente juego de hipotesis:
+
+$$H_0: \mu = \mu_0\ \ \ vs\ \ \ H_1: \mu \neq \mu_0$$
+
+```{r, echo = FALSE, message=FALSE}
+# VECTOR PARA HIPOTESIS
+vector <- t(t(c(66.1, 58, 81.6, 37, 47, 25, 19.2, 167)))
+
+# Matriz de varianzas y covarianzas
+s <- cov(auxiliar)
+```
+
+
+```{r, echo=FALSE}
+n <- nrow(auxiliar)
+
+p <- ncol(auxiliar)
+
+f <- qf(0.05, p, n-p, lower.tail = F)
+```
+
+Por la **ley debil de los grandes numeros** se garantiza que $\overline{X}\underset{p}{\rightarrow} \mu$ y $S\underset{p}{\rightarrow} \Sigma$, entonces:
+
+$$\overline{X} = \begin{bmatrix}
+64.87186\\ 
+55.55025\\ 
+79.94422\\ 
+36.02864\\ 
+46.38543\\ 
+24.20503\\ 
+17.6392\\ 
+162.6829
+\end{bmatrix} y\ \ \mu_0 = \begin{bmatrix}
+66.1\\ 
+58\\ 
+81.6\\ 
+37\\ 
+47\\ 
+25\\ 
+19.2\\ 
+167
+\end{bmatrix}$$
+
+$$\textbf{S} = \begin{bmatrix}
+122.890416 & 40.2635425 & 90.537362 & 16.8143960 & 13.401962 & 9.5883239 & 6.6404015 & 54.5494158 \\
+40.263542 & 24.6902903 & 25.364837 & 12.2737049 & 5.639524 & 1.1121704 & 0.6505457 & 6.2108629 \\
+90.537362 & 25.3648373 & 88.527833 & 9.3252421 & 6.606405 & 4.9877565 & 3.7227529 & 27.2633351 \\
+16.814396 & 12.2737049 & 9.325242 & 9.7819532 & 2.742894 & -0.0940841 & -0.3135526 & -0.5799627 \\
+13.401962 & 5.6395239 & 6.606405 & 2.7428943 & 6.402766 & 1.8217403 & 1.2889579 & 11.2003053 \\
+9.588324 & 1.1121704 & 4.987756 & -0.0940841 & 1.821740 & 2.4818938 & 1.6014182 & 11.8454903 \\
+6.640402 & 0.6505457 & 3.722753 & -0.3135526 & 1.288958 & 1.6014182 & 1.2667387 & 8.2208751 \\
+54.549416 & 6.2108629 & 27.263335 & -0.5799627 & 11.200305 & 11.8454903 & 8.2208751 & 71.1616258
+\end{bmatrix}$$
+
+
+
+
+Los calculos en R para calcular el estadistico $T_0^2$ son:
+
+$$T_0^2 = n(\overline{X} - \mu_0)' S^{-1} (\overline{X} - \mu_0) \sim \frac{(n-1)p}{n-p} f(p, n-p)$$
+
+```{r, echo = FALSE}
+t_0 <- n%*%t(x_barra - vector)%*%solve(s) %*% (x_barra - vector)
+```
+
+```{r, echo=FALSE}
+knitr::kable(data.frame(Estadistico = t_0), format = "markdown", caption = "$T_0^2$")
+```
+
+$$T_0^2 = 1810.498; f(0.05, 8, 199-8) = 1.987138$$
+
+
+Ahora:
+
+$$\frac{199-8}{(199-1)8} 1810.498 > 1.987138$$
+
+$$218.3113 > 1.987138$$
+
+```{r, echo=FALSE}
+hipotesis <- (n-1)/((n-1)*p) * t_0
+
+#hipotesis > f
+
+```
+
+
+Por lo tanto se rechaza la hipotesis nula, entonces nuestro vector de medias estimado es diferente a el vector de medias planteado para la hipotesis nula, o en otras palabras: $\overline{X} \neq \mu_0$
+
+## Punto 2
+
+Para realizar este punto filtramos la base de datos por variable **SEXO** la cual tiene las categorias: Hom(para hombres) y Muj(para mujeres), por lo tanto generamos 2 sub bases de datos filtradas por cada genero a partir de la muestra.
+
+
+### Hombres:
+
+```{r, echo = FALSE}
+hombres <- subset(datos, SEXO == "Hom", select = c(P1, P7, P16, P22, P25, P27, P29, P38))
+```
+
+Primero aplicaremos prueba de normalidad multivariada con Royston's test: 
+
+```{r, echo=FALSE}
+result_hombres <- MVN::mvn(data = hombres, mvnTest="royston")
+knitr::kable(result_hombres$multivariateNormality, "markdown", caption = "Normalidad hombres")
+```
+
+Con un $\alpha = 0.05$ rechazamos la hipotesis nula y por lo tanto nuestros datos no se distribuyen normales multivariados.
+
+```{r, echo = FALSE}
+attach(hombres)
+
+x_barra_hombres <- t(t(c(mean(P1), mean(P7), mean(P16), mean(P22), mean(P25), mean(P27), mean(P29), mean(P38))))
+  
+detach()
+
+
+```
+
+
+```{r, echo = FALSE}
+# VECTOR PARA HIPOTESIS
+vector <- t(t(c(66.1, 58, 81.6, 37, 47, 25, 19.2, 167)))
+
+# Matriz de varianzas y covarianzas
+s_hombres <- cov(hombres)
+```
+
+
+```{r, echo=FALSE}
+n_hombres <- nrow(hombres)
+
+p_hombres <- ncol(hombres)
+
+f <- qf(0.05, p_hombres, n_hombres-p_hombres, lower.tail = F)
+```
+
+
+Tambien debemos tener en cuenta que nuestros datos no provienen de una distribucion normal y para hacer la prueba de hipotesis debemos de tener en cuenta que desconocemos tanto el vector de medias $\mu_H$ como la matriz de varianzas y covarianzas, por lo tanto debemos estimar ambos a partir de los datos, ya que tenemos conocimiento acerca de esto procederemos a definir los siguientes elementos para hacer la prueba de hipotesis $\mu_H = \mu_0$, la cual se refiere al siguiente juego de hipotesis:
+
+$$H_0: \mu_H = \mu_0\ \ \ vs\ \ \ H_1: \mu_H \neq \mu_0$$
+
+Por la **ley debil de los grandes numeros** se garantiza que $\overline{X}_H\underset{p}{\rightarrow} \mu_H$ y $S_H\underset{p}{\rightarrow} \Sigma_H$, entonces:
+
+$$\overline{X}_H = \begin{bmatrix}
+68.92130\\ 
+54.86759\\ 
+83.27222\\ 
+34.85370\\ 
+46.52870\\ 
+25.18056\\ 
+18.35093\\ 
+168.06852
+\end{bmatrix} y\ \ \mu_0 = \begin{bmatrix}
+66.1\\ 
+58\\ 
+81.6\\ 
+37\\ 
+47\\ 
+25\\ 
+19.2\\ 
+167
+\end{bmatrix}$$
+
+$$\textbf{S}_H = \begin{bmatrix}
+121.134963 & 49.528454 & 83.6152700 & 24.8939858 & 11.934990 & 5.4282684 & 3.6393726 & 33.972546 \\
+49.528454 & 26.010996 & 31.5256334 & 11.1421305 &  4.823182 & 1.7561864 & 1.3634415 & 12.046634 \\
+83.615270 & 31.525633 & 79.1674455 & 16.9058048 &  4.777814 & 1.2761838 & 0.9776895 &  7.911547 \\
+24.893986 & 11.142130 & 16.9058048 &  7.3731637 &  2.339285 & 1.1490914 & 0.7065853 &  7.200959 \\
+11.934990 &  4.823182 &  4.7778141 &  2.3392852 &  5.901505 & 1.7554232 & 1.3002068 & 11.186426 \\
+5.428268 &  1.756186 &  1.2761838 &  1.1490914 &  1.755423 & 1.4699922 & 0.8590369 &  6.525457 \\
+3.639373 &  1.363442 &  0.9776895 &  0.7065853 &  1.300207 & 0.8590369 & 0.7305599 &  4.247132 \\
+33.972546 & 12.046634 &  7.9115472 &  7.2009588 & 11.186426 & 6.5254569 & 4.2471322 & 41.026289 \\
+\end{bmatrix}$$
+
+
+Los calculos en R para calcular el estadistico $T_0^2$ son:
+
+$$T_0^2 = n(\overline{X}_H - \mu_0)' S_H^{-1} (\overline{X}_H - \mu_0) \sim \frac{(n_-1)p}{n-p} f(p, n-p)$$
+
+
+```{r, echo = FALSE}
+t_0 <- n_hombres%*%t(x_barra_hombres - vector) %*% solve(s_hombres) %*% (x_barra_hombres - vector)
+```
+
+```{r, echo=FALSE}
+knitr::kable(data.frame(Estadistico = t_0), format = "markdown", caption = "$T_0^2$")
+```
+
+
+
+$$T_0^2 = 1058.521; f(0.05, 8, 108-8) = 2.032328$$
+
+
+Ahora:
+
+$$\frac{108-8}{(108-1)8} 1058.521 > 2.032328$$
+
+$$132.3151 > 2.032328$$
+
+
+```{r, echo=FALSE}
+hipotesis <- (n_hombres-1)/((n_hombres-1)*p_hombres) * t_0
+
+#hipotesis > f
+
+```
+
+
+Por lo tanto se rechaza la hipotesis nula, entonces nuestro vector de medias estimado es diferente a el vector de medias planteado para la hipotesis nula, o en otras palabras: $\overline{X}_H \neq \mu_0$
+
+
+
+
+### Mujeres:
+
+```{r, echo = FALSE}
+mujeres <- subset(datos, SEXO == "Muj", select = c(P1, P7, P16, P22, P25, P27, P29, P38))
+```
+
+Primero aplicaremos prueba de normalidad multivariada con Royston's test
+
+```{r, echo=FALSE}
+result_mujeres <- MVN::mvn(data = mujeres, mvnTest="royston")
+knitr::kable(result_mujeres$multivariateNormality, "markdown", caption = "Normalidad mujeres")
+```
+
+```{r, echo = FALSE}
+attach(mujeres)
+
+x_barra_mujeres <- t(t(c(mean(P1), mean(P7), mean(P16), mean(P22), mean(P25), mean(P27), mean(P29), mean(P38))))
+  
+detach()
+
+
+```
+
+
+```{r, echo = FALSE}
+# VECTOR PARA HIPOTESIS
+vector <- t(t(c(66.1, 58, 81.6, 37, 47, 25, 19.2, 167)))
+
+# Matriz de varianzas y covarianzas
+s_mujeres <- cov(mujeres)
+```
+
+
+```{r, echo=FALSE}
+n_mujeres <- nrow(mujeres)
+
+p_mujeres <- ncol(mujeres)
+
+f <- qf(0.05, p_mujeres, n_mujeres-p_mujeres, lower.tail = F)
+```
+
+
+Tambien debemos tener en cuenta que nuestros datos no provienen de una distribucion normal y para hacer la prueba de hipotesis debemos de tener en cuenta que desconocemos tanto el vector de medias $\mu_M$ como la matriz de varianzas y covarianzas, por lo tanto debemos estimar ambos a partir de los datos, ya que tenemos conocimiento acerca de esto procederemos a definir los siguientes elementos para hacer la prueba de hipotesis $\mu_M = \mu_0$, la cual se refiere al siguiente juego de hipotesis:
+
+$$H_0: \mu_M = \mu_0\ \ \ vs\ \ \ H_1: \mu_M \neq \mu_0$$
+
+Por la **ley debil de los grandes numeros** se garantiza que $\overline{X}_M\underset{p}{\rightarrow} \mu_M$ y $S_M\underset{p}{\rightarrow} \Sigma_M$, entonces:
+
+$$\overline{X}_M = \begin{bmatrix}
+60.06593\\ 
+56.36044\\ 
+75.99451\\ 
+37.42308\\ 
+46.21538\\ 
+23.04725\\ 
+16.79451\\ 
+156.29121
+\end{bmatrix} y\ \ \mu_0 = \begin{bmatrix}
+66.1\\ 
+58\\ 
+81.6\\ 
+37\\ 
+47\\ 
+25\\ 
+19.2\\ 
+167
+\end{bmatrix}$$
+
+$$\textbf{S}_M = \begin{bmatrix}
+83.311827 & 36.950193 & 64.4081441 & 19.8809060 & 13.772419 & 4.2742943 & 2.7189219 & 22.389364 \\
+36.950193 & 22.171529 & 24.2840024 & 11.6505897 &  6.929393 & 2.1064457 & 1.0852247 &  8.989648 \\
+64.408144 & 24.284002 & 71.5756361 & 10.6774615 &  7.602530 & 0.9362625 & 0.8119695 &  3.539507 \\
+19.880906 & 11.650590 & 10.6774615 &  9.1317949 &  3.694974 & 1.4346752 & 0.6645726 &  6.768094 \\
+13.772419 &  6.929393 &  7.6025299 &  3.6949744 &  7.015983 & 1.5540427 & 1.0223077 &  9.316359 \\
+4.274294 &  2.106446 &  0.9362625 &  1.4346752 &  1.554043 & 1.2151868 & 0.6798181 &  4.515087 \\
+2.718922 &  1.085225 &  0.8119695 &  0.6645726 &  1.022308 & 0.6798181 & 0.5889695 &  2.977840 \\
+22.389364 &  8.989648 &  3.5395067 &  6.7680940 &  9.316359 & 4.5150867 & 2.9778400 & 31.666366 \\
+\end{bmatrix}$$
+
+Los calculos en R para calcular el estadistico $T_0^2$ son:
+
+$$T_0^2 = n(\overline{X}_M - \mu_0)' S_M^{-1} (\overline{X}_H - \mu_0) \sim \frac{(n_-1)p}{n-p} f(p, n-p)$$
+
+
+```{r, echo = FALSE}
+t_0 <- n_mujeres%*%t(x_barra_mujeres - vector) %*% solve(s_mujeres) %*% (x_barra_mujeres - vector)
+```
+
+```{r, echo=FALSE}
+knitr::kable(data.frame(Estadistico = t_0), format = "markdown", caption = "$T_0^2$")
+```
+
+
+
+$$T_0^2 = 1583.959; f(0.05, 8, 91-8) = 2.05201$$
+
+
+Ahora:
+
+$$\frac{91-8}{(91-1)8} 1583.959 > 2.05201$$
+
+$$197.9949 > 2.05201$$
+
+
+```{r, echo=FALSE}
+hipotesis <- (n_mujeres-1)/((n_mujeres-1)*p_mujeres) * t_0
+
+#hipotesis > f
+
+```
+
+
+Por lo tanto se rechaza la hipotesis nula, entonces nuestro vector de medias estimado es diferente a el vector de medias planteado para la hipotesis nula, o en otras palabras: $\overline{X}_M \neq \mu_0$
+
+
+## Punto 3
+
+
+Se sabe que $\textbf{X} ~ N_8(\mu, \Sigma)$. Se quiere probar la hipotesis:
+
+$$H_0:\left\{\begin{matrix}
+2\mu_1 -\mu_2 + 3\mu_4 - \mu_6 + \mu_7 - \mu_8 = 0\\ 
+3\mu_2 - 4\mu_3 + 2\mu_5 + 2\mu_6 = 0
+\end{matrix}\right.$$
+
+La cual se puede escribir como:
+
+$$\begin{bmatrix}
+2 & -1 & 0 & 3 & 0 & -1 & 1 & -1 \\
+0 & 3 & -4 & 0 & 2 & 2 & 0 & 0 \\
+\end{bmatrix}
+\begin{bmatrix}
+\mu_1\\ 
+\mu_2\\ 
+\mu_3\\ 
+\mu_4\\ 
+\mu_5\\ 
+\mu_6\\ 
+\mu_7\\ 
+\mu_8
+\end{bmatrix} =
+\begin{bmatrix}
+0\\ 
+0
+\end{bmatrix}$$
+
+
+```{r, echo=FALSE}
+C <- matrix(c(2, -1, 0, 3, 0, -1, 1, -1, 
+              0, 3, -4, 0, 2, 2, 0, 0), nrow = 2, ncol = 8, byrow = TRUE)
+
+k <- 2
+
+attach(auxiliar)
+x_barra <- t(t(c(mean(P1), mean(P7), mean(P16), mean(P22), mean(P25), mean(P27), mean(P29), mean(P38))))
+detach()
+
+s <- cov(auxiliar)
+```
+
+
+Como $\bar{X}$ es un estimador insesgado para $\mu$, por esta propiedad: $E[C\bar{X}] = CE[\bar{X}] = C\mu$ se tiene que $C\bar{X}$ es un estimador insesgado para $C\mu$. Tambien se tiene que:
+
+$\bar{X} \sim N_8(\mu,\frac{1}{199}\Sigma)$, lo que implica que $C\bar{X} \sim N_2(C\mu,\frac{1}{199}C\Sigma C')$
+
+Donde C es una matriz de dimension k x p, donde k =2 y p = 8. Como $\Sigma$ es desconocida, se estima usando $\textbf{S}$
+
+El estadistico bajo, $H_0$ cierta, es:
+
+$$T_0^2 = n(C\bar{X} - \gamma)' (CSC')^{-1} (C\bar{X}-\gamma)$$
+
+
+Donde se rechaza $H_0$, con un $\alpha$ fijado, si $\frac{(n-k)}{(n-1)k} T_0^2 > f_\alpha (k, n-k)$
+
+```{r, echo = FALSE}
+t_0 <- n%*%{t(C%*%x_barra-c(0,0)) %*% solve(C%*%s%*%t(C))%*%(C%*%x_barra-c(0,0))}
+```
+
+```{r, echo = FALSE}
+calculo <- ((n-k)/((n-1)*k))*t_0
+```
+
+```{r, echo = FALSE}
+f <- qf(0.05, k, 199-k, lower.tail = F)
+```
+
+
+Haciendo el computo en R, se tiene que $T_0^2 = 79.14568, \frac{(n-k)}{(n-1)k}T_0^2 = 39.37298$. Asi, fijando un $\alpha = 0.05, f_{0.05} (2, 199-2) = 4.39842$
+
+Para concluir, podemos ver que $39.37298 > 4.39842$ por lo tanto se rechaza la hipotesis nula (la planteada) y  se concluye que la evidencia muestral no parece ser coherente con la hipótesis planteada
+
+
+## Punto 4
+
+
+Para realizar este punto filtramos la base de datos por variable **CAT_IMC** la cual tiene las categorias: Delgado, Normal y Obeso, por lo tanto generamos 3 sub bases de datos filtradas por cada categoria de IMC a partir de la muestra.
+
+```{r, echo = FALSE}
+delgado <- subset(datos, CAT_IMC == "Delgado", select = c(P1, P7, P16, P22, P25, P27, P29, P38))
+
+normal <- subset(datos, CAT_IMC == "Normal", select = c(P1, P7, P16, P22, P25, P27, P29, P38))
+
+obeso <- subset(datos, CAT_IMC == "Obeso", select = c(P1, P7, P16, P22, P25, P27, P29, P38))
+```
+
+
+```{r, echo=FALSE}
+s1 <- matrix(var(delgado), ncol=8)
+s2 <- matrix(var(normal), ncol=8)
+s3 <- matrix(var(obeso), ncol=8)
+
+n1 <- nrow(delgado) 
+n2 <- nrow(normal) 
+n3 <- nrow(obeso)
+p <- ncol(delgado) 
+g <- 3
+```
+
+
+```{r, echo=FALSE}
+# Matriz ponderada
+sum_ni <- ((n1-1)+(n2-1)+(n3-1))
+sum_inv_ni <- (1/(n1-1))+(1/(n2-1))+(1/(n3-1))
+k <- (2*p^2 +3*p-1)/(6*(p+1)*(g+1))
+sp <- ((n1-1)*s1+(n2-1)*s2+(n3-1)*s3)/sum_ni
+```
+
+```{r, echo=FALSE}
+# Estad ́ıstico M = -2*ln(lambda)
+M <- sum_ni*log(det(sp))-
+((n1-1)*log(det(s1))+(n2-1)*log(det(s2))+(n3-1)*log(det(s3)))
+u <- (sum_inv_ni -(1/sum_ni))*k
+C <- (1-u)*M
+#C
+```
+
+
+```{r, echo=FALSE}
+# Grados de libertad de la Chi^2
+alpha <- 0.05
+gl <- p*(p+1)*(g-1)/2
+cuantil <- qchisq(alpha,gl)
+#cuantil
+
+#C > cuantil
+```
+
+
+Tenemos un vector $\textbf{X}$ el cual tiene distribucion normal multivariada.
+
+Para tres grupos, en nuestro caso delgado, normal y obeso, asi que lo que se plantea es: $\Sigma_D = \Sigma_N = \Sigma_O = \Sigma$, entonces definimos $U_1 \sim N_8(\mu_1, \Sigma_1)$ como la distribucion para las poblacion de personas delgadas, $U_2 \sim N_8(\mu_2, \Sigma_2)$ para personas IMC normal y $U_3 \sim N_8(\mu_3, \Sigma_3)$, defnimos la hipotesis nula:
+
+$$H_0: \Sigma_1 = \Sigma_2 = \Sigma_3 = \Sigma$$
+
+Para probar esta hipotesis necesitamos el siguiente estadistico de razon de verosimilitud:
+
+$$\lambda = \prod_{i=1}^3 
+\begin{pmatrix}
+\frac{|S_i|}{|S_p|}
+\end{pmatrix}^{\frac{(n_i-1)}{2}}$$
+
+Donde la expresion $S_i ; i = 1, 2, 3$ representa la matriz de varianzas y covarianzas muestrasl para las 3 categorias de la variables **CAT_IMC**, y $S_p$ la matriz ponderada de estas poblaciones dada por:
+
+$$S_p = \frac{1}{\sum_{i=1}^3 (n_i-1)}[(n_1-1)S_1 + (n_2-1)S_2 + (n_3-1)S_3]$$
+
+$$S_1 = Delgado, S_2 = Normal, S_3 = Obeso$$
+
+Ahora necesitamos un estadistico para probar $H_0$, asi que tenemos, teniendo ya un criterio para evaluar la hipotesis, fijando un nivel de significancia $\alpha = 0.05$, se rechaza $H_0$ si:
+
+$$C = (1 - u)M > \chi_{0.05}^2 (\frac{1}{2}p(p+1)(g-1))$$
+
+En nuestro caso **g = 3** y **p = 8**, teniendo en cuenta esto.
+
+Ahora iniciemos definiendo y calculando $\textbf{M}$
+
+$$M = -2ln(\lambda)$$
+
+entonces:
+
+$$M = \begin{bmatrix} \sum_{i=1}^3 (n_i-1)\end{bmatrix} * ln|S_p| - \sum_{i=1}^3 (n_i-1)* ln|S_i|$$
+
+Ahora $\textbf{u}$:
+
+$$u = \begin{bmatrix} \sum_{i=1} ^3 \frac{1}{(n_i-1)} - \frac{1}{\sum_{i=1}^2 (n_i-1)}\end{bmatrix}$$
+
+Teniendo ya un criterio para evaluar la hipotesis, fijando un nivel de significancia $\alpha = 0.05$, se rechaza $H_0$ si:
+
+$$C = 122.6367\ y\ \chi_{0.05}^2(\frac{1}{2}8(8+1)(3-1)) = 53.46233$$
+
+$$122.6367 > 53.46233$$
+
+Como se **C** es mayor a el cuantil de la chi cuadrado, se rechaza $H_0$ y por lo tanto se tiene suficiente evidencia estadistica para afirmar que la estructura de covarianzas para personas con la categoria IMC delgado, normal y obeso son diferentes.
+
+## Punto 5
+
+Para realizar este punto filtramos la base de datos por variable **SEXO** la cual tiene las categorias: Hom(para hombres) y Muj(para mujeres), por lo tanto generamos 2 sub bases de datos filtradas por cada genero a partir de la muestra.
+
+
+```{r, echo=FALSE}
+delta_o <- matrix(rep(0,p),ncol=1)
+
+s_5 <- (1/n_hombres)*s_hombres+(1/n_mujeres)*s_mujeres
+xc <- t(x_barra_hombres-x_barra_mujeres-delta_o)%*%solve(s_5)%*%(x_barra_hombres-x_barra_mujeres-delta_o)
+chi_5 <- qchisq(0.05,p, lower.tail = F)
+
+```
+
+
+Usaremos los mismos vectores de medias y la matrices de varianzas y covarianzas que estimamos en el punto 2 para ambos generos.
+
+La prueba a realizar es:
+
+$$H_0: \mu_H - \mu_M = \delta \ \ vs \ \ H_1: \mu_H - \mu_M \neq \delta$$
+
+donde $\delta = (0, 0, 0, 0, 0, 0, 0, 0)'$
+
+De los resultados muestrales obtenidos se tiene que:
+
+$$\overline{X}_H - \overline{X}_M = \begin{bmatrix}
+8.855\\ 
+-1.493\\ 
+7.278\\ 
+-2.569\\ 
+0.313\\ 
+2.133\\ 
+1.556\\ 
+11.777
+\end{bmatrix}$$
+
+Tambien tenemos que:
+
+$$S = \frac{1}{n_H}S_H + \frac{1}{n_M}S_M = \frac{1}{108}S_H + \frac{1}{91}S_M$$
+
+
+$$S = \begin{bmatrix}
+2.037 & 0.865 & 1.482 & 0.449 & 0.262 & 0.097 & 0.064 & 0.561 \\
+0.865 & 0.484 & 0.559 & 0.231 & 0.121 & 0.039 & 0.025 & 0.210 \\
+1.482 & 0.559 & 1.520 & 0.274 & 0.128 & 0.022 & 0.018 & 0.112 \\
+0.449 & 0.231 & 0.274 & 0.169 & 0.062 & 0.026 & 0.014 & 0.141 \\
+0.262 & 0.121 & 0.128 & 0.062 & 0.132 & 0.033 & 0.023 & 0.206 \\
+0.097 & 0.039 & 0.022 & 0.026 & 0.033 & 0.027 & 0.015 & 0.110 \\
+0.064 & 0.025 & 0.018 & 0.014 & 0.023 & 0.015 & 0.013 & 0.072 \\
+0.561 & 0.210 & 0.112 & 0.141 & 0.206 & 0.110 & 0.072 & 0.728 \\
+\end{bmatrix}$$
+
+
+
+Bajo $H_0$, el estadistico de prueba se calcula como:
+
+$$X_c = \begin{bmatrix}
+\overline{X}_H\ - \overline{X}_M\ - \delta_0
+\end{bmatrix}' \begin{bmatrix} \frac{1}{n_H}S_H + \frac{1}{n_M}S_M \end{bmatrix}^{-1} \begin{bmatrix}
+\overline{X}_H\ - \overline{X}_M\ - \delta_0
+\end{bmatrix} \overset{d}{\rightarrow} \chi^2(p)$$
+
+$$X_c = 735.7922$$
+
+Fijando un $\alpha = 0.05$, se tiene que nuestro valor critico es:
+
+$$\chi_{0.05}^2(8) = 15.50731$$
+
+$$735.7922 > 15.50731$$
+
+Como $X_c$ es mayor que el cuantil de la chi-cuadrado, se rechaza la hipotesis nula y por lo tanto se concluye que el vector $\textbf{X}$ es suficiente para discriminar entre hombres y mujeres.
+
+## Punto 6
+
+Al calcular los valores propios obtenemos los siguientes resultados:
+
+```{r, echo=FALSE}
+valores_propios <- round(eigen(s)$values,3)
+```
+
+
+$$(236.409,	57.674,	23.497,	4.176,	2.666,	2.006,	0.626,	0.151)$$
+
+
+```{r, echo=FALSE}
+a <- prcomp(auxiliar)
+
+summ<- summary(a)
+
+knitr::kable(as.data.frame(round(summ$rotation,3)), format = "markdown", caption = "Y vectores propios")
+```
+
+Cada columna es un vector propio el cual esta relacionado a su respectivo valor propio el cual mostramos al principio de este punto.
+
+```{r, echo=FALSE, fig.width = 6, fig.height = 4}
+prop_varianza <- a$sdev^2 / sum(a$sdev^2)
+
+
+ggplot(data = data.frame(prop_varianza, pc = 1:8),
+       aes(x = pc, y = prop_varianza, fill = prop_varianza)) +
+  geom_col(width = 0.3) +
+  geom_line(aes(x = pc, y = prop_varianza), color = "black") +
+  geom_text(aes(x = pc, y = prop_varianza, label = paste(round(prop_varianza*100,2), "%")),
+            vjust = -0.5, size = 3) +
+  scale_y_continuous(limits = c(0,1)) +
+  theme_minimal() +
+  labs(x = "Componente principal", y = "Prop. de varianza explicada") +
+  ggtitle("Scree-plot")
+
+```
+
+En este grafico podemos ver el porcentaje de variabilidad total que explica cada una de las componentes principales, en este caso la primera explica un **72.25%** y las primeras dos componentes explican un total de **89.88%** de la variabilidad total y ademas se observa que las observaciones tienen un peso mayor en las componente principales antes vistas.
+
+
+```{r, echo=FALSE, fig.width = 6, fig.height = 4}
+fviz_pca_ind(a, col.ind=1:199,gradient.cols=c("#FFAE00", "#FF9000", "#FF6E00", "#FF4800", "#FF2200", "#FF0000"))
+```
+
+
+En el gráfico, cada punto representa un individuo, y el color del punto representa la proporción de varianza explicada por la primera componente principal. Los individuos de color rojo representan a los individuos que tienen una mayor proporción de varianza explicada por la primera componente principal, mientras que los individuos de color amarillo representan a los individuos que tienen una menor proporción de varianza explicada por la primera componente principal.
+
+```{r, echo=FALSE}
+coeficientes <- round(eigen(s)$vectors,3)
+```
+
+```{r, echo=FALSE}
+tabla2 <- as.data.frame(t(coeficientes[,1]))
+
+colnames(tabla2) <- c("P1", "P7", "P16", "P22", "P25", "P27", "P29", "P38")
+
+knitr::kable(tabla2, format = "markdown", caption = "Coeficientes primera componente")
+```
+
+
+
+```{r, echo=FALSE}
+
+aux <- svd(s)
+plot(aux$u[,1],aux$u[,2], type="n", xlab="Componente 1", ylab="Componente 2")
+text(aux$u[,1],aux$u[,2], labels=colnames(auxiliar))
+abline(h=0)
+abline(v=0)
+arrows(0,0,aux$u[,1]+0.03,aux$u[,2]-0.03,col="red", lwd=3)
+```
+
+Con estos valores podemos ver que las variables que tienen un mayor aporte a la primera componente son: P1(Masa), P16(Perimetro abdominal cintura) y P38 (altura) tambien tiene un peso importante.
+
+Se observa que todos los coeficientes en esta combinación son negativos, lo que sugiere que esto puede servir como un indicador de individuos con mediciones antropométricas muy pequeñas o muy grandes. Para clasificar a las personas, simplemente se realiza el producto escalar entre un conjunto de datos y el vector de coeficientes de la primera componente principal. A partir de este resultado, se genera un score, cuanto menor sea este valor, se infiere que la persona posee características antropométricas más altas, mientras que un valor mayor indica cualidades antropométricas más bajas.
+
+
+Debemos probar que nuestro valor mas pequeño el cual es $\lambda_8 = 0.151$ es significativamente mayor que 1, y esto lo haremos usando el siguiente juego de hipotesis:
+
+$$H_0: \lambda_8 = 0 \ \ vs \ \ H_1: \lambda_8 \neq 0$$
+
+Asi con un $\alpha = 0.05$, un intervalo de confianza aproximado al
+$100(1 - \alpha)%$ para $\lambda_8$ esta dado por:
+
+$$I = \begin{pmatrix} \frac{\hat\lambda_8}{1 + Z_{0.025} \sqrt{\frac{2}{199}}}, \frac{\hat\lambda_8}{1 - Z_{0.025} \sqrt{\frac{2}{199}}} \end{pmatrix} = 
+\begin{pmatrix} \frac{0.151}{1 + 1.96 \sqrt{\frac{2}{199}}}, \frac{0.151}{1 - 1.96 \sqrt{\frac{2}{199}}} \end{pmatrix} $$
+
+
+```{r, echo=FALSE}
+z <- qnorm(0.025, lower.tail = F)
+
+inferior <- round(valores_propios[8]/(1 + z*sqrt(2/n)),3)
+
+superior <- round(valores_propios[8]/(1 - z*sqrt(2/n)),3)
+```
+
+
+$$I = \begin{pmatrix} 0.126, 0.188\end{pmatrix}$$
+
+Como el intervalo de confianza no contiene el 0, esto quiere decir que se rechaza la hipotesis nula $H_0$ y esto quiere decir que los valores propios son significativamente diferentes de 0.
+
+

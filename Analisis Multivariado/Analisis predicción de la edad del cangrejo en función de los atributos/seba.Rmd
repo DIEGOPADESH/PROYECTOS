@@ -1,0 +1,176 @@
+---
+title: '2'
+author: "Juan David Garcia Zapata"
+date: "2023-11-15"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, message=FALSE}
+library(tidyverse)
+library(MASS)
+library(mvShapiroTest)
+library(heplots)
+library(klaR)
+library(tidyverse)
+library(lattice)
+library(caret)
+library(dslabs)
+library(splitstackshape) 
+library(caTools)
+library(class)
+library(MLmetrics)
+```
+
+# Lectura de la base de datos
+
+```{r}
+DB <-read.csv("CrabAgePrediction.csv")
+```
+
+
+# Filtracion de la base de datos
+
+```{r}
+DB  <- DB %>% 
+  filter(DB$Sex != "I")
+
+DB <- DB %>%
+  mutate(Sex = recode(Sex, "F" = 1, "M" = 0))
+
+```
+
+
+# Prueba de diferencia de vectores de medias
+
+```{r}
+# PRUEBA PARA DISTRIBUCIONES NO NORMALES
+
+# Seperacion de la base de datos por sexo
+DB1 <- subset(DB, Sex == 1, select =-c(1))
+DB2 <- subset(DB, Sex == 0, select = -c(1))
+
+# Numeros de registros que tienen ambos sexos
+
+n <- nrow(DB1)
+m <- nrow(DB2)
+
+# Numero de parametros
+
+p <- ncol(DB1)
+```
+
+
+```{r}
+# Elenemos para la prueba de hipotesis
+
+## Delta 0, (vector de 0s)
+
+delta_0 <- matrix(rep(0,p), ncol = 1)
+
+## Vector de medias para ambos sexos
+
+Vmed_1 <- matrix(apply(DB1,2, mean), ncol = 1)
+vmed_2 <- matrix(apply(DB2,2, mean), ncol = 1)
+
+## Matriz de varianzas y covarianzas para ambos sexos
+
+scov_1 <- var(DB1)
+scov_2 <- var(DB2)
+
+# Elemento auxiliar
+
+s <- (1/n)*scov_1+(1/n)*scov_2
+
+# Calculo del estadistico de prueba
+
+xc <- t(Vmed_1-vmed_2-delta_0)%*%solve(s)%*%(Vmed_1-vmed_2-delta_0)
+
+x_alpha <- qchisq(0.95,p)
+xc>x_alpha
+```
+
+
+$$X_c = 68.54913; \chi^2(7) = 14.06714$$
+
+
+# Discriminante lineal
+
+```{r}
+set.seed(123)
+aux <- stratified(DB, "Sex", 0.7, bothSets=T)
+train <- aux$SAMP1
+
+test <- aux$SAMP2
+
+z <- lda(Sex ~ . , data=train)
+z
+names(z)
+plot(z)
+lda_pred <- predict(object=z, newdata=test)
+
+table(test$Sex, lda_pred$class, dnn=c("Real", "Predicha"))
+```
+
+
+
+# Modelo logistico
+
+```{r}
+log_saber <- glm(Sex ~ ., family=binomial, data=train)
+summary(log_saber)
+pred_saber <- predict(log_saber, type='response', newdata=test)
+pred_valid <- ifelse(pred_saber > 0.5, 1, 0)   
+mat_Conf <- table(test$Sex, pred_valid)
+
+mat_Conf
+```
+
+
+# KNN
+
+## K optimo
+
+```{r}
+i=1
+k.optm=1
+for (i in 1:30){
+  knn.mod <- knn(train=train, test=test, cl=train$Sex, k=i)
+  k.optm[i] <- 100* sum(test$Sex == knn.mod)/NROW(test$Sex)
+  
+  k=i
+  cat(k,'=',k.optm[i],'')
+}
+png("koptimo.png")
+
+plot(k.optm, type="b", xlab="K- Value",ylab="Accuracy level")
+abline(v = 1, col = "red")
+
+dev.off()
+```
+
+
+## KNN resultante
+
+```{r}
+classifier_knn <- knn(train = train, 
+                      test = test, 
+                      cl = train$Sex, 
+                      k = 1) 
+
+a <- table(test$Sex, classifier_knn)
+
+(a[1,2]+a[2,1])/length(test$Sex)
+```
+
+## Confusion Matrix
+
+```{r}
+confusionMatrix(data = classifier_knn, reference = as.factor(test$Sex))
+```
+
+
+
