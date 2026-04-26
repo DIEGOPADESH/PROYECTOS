@@ -1,0 +1,511 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+toc: TRUE
+---
+
+\pagebreak
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Punto 1
+
+Los siguientes datos detallan los pagos en relacion a reclamos realizados por una compañia de seguros generales durante el periodo 1993-98.
+
+
+\begin{equation*}
+\centering
+\begin{tabular}{ccrrrrrr}
+Año & Número de reclamos & \multicolumn{6}{c}{Pagos en años de desarrollo (\$1000s)} \\
+     & (incluidos IBNR) & 0 & 1 & 2 & 3 & 4 & 5 \\
+
+1993 & 6203 & 192 & 251 & 153 & 145 & \colorbox{orange}{98} & 0 \\
+
+1994 & 6372 & 205 & 280 & 195 & \colorbox{orange}{150} & 102 &  \\
+
+1995 & 6505 & 230 & 345 & \colorbox{orange}{230} & 212 &  &  \\
+
+1996 & 6512 & 288 & \colorbox{orange}{410} & 275 &  &  &  \\
+
+1997 & 7523 & 398 & 563 &  &  &  &  \\
+
+1998 & 8250 & 530 &  &  &  &  &  \\
+
+\end{tabular}
+\end{equation*}
+
+Tomado de "Introductory Statistics with applications in General Insurance" por I.B.Hossack, J.H.Polard, B.Zehnwirth.1999.
+
+- Reemplace al menos 2 de los valores en los rectangulos, por valores que se encuentren entre los valores de los vecinos mas de la correspondiente fila, respetando el orden.
+
+asumiendo que no se dispone de mas informacion, utilice el metodo de la escalera para estimar las provisiones relativas a reclamos pendientes hacia el final del año 1998.
+
+
+
+Primero reemplazaremos 2 valores de los señalados por valores que se encuentre entre los valores de los vecinos mas cercanos de la correspondiente fila.
+
+En este caso, 98 lo reemplazaremos con 145 (correspondiente a la misma fila) y 230 por 345 (correspondiente a la misma fila), y queda de la siguiente forma:
+
+## Tabla original
+
+\begin{equation*}
+\centering
+\begin{tabular}{ccrrrrrr}
+Año & Número de reclamos & \multicolumn{6}{c}{Pagos en años de desarrollo (\$1000s)} \\
+     & (incluidos IBNR) & 0 & 1 & 2 & 3 & 4 & 5 \\
+
+1993 & 6203 & 192 & 251 & 153 & 145 & \colorbox{orange}{145} & 0 \\
+
+1994 & 6372 & 205 & 280 & 195 & 150 & 102 &  \\
+
+1995 & 6505 & 230 & 345 & \colorbox{orange}{345} & 212 &  &  \\
+
+1996 & 6512 & 288 & 410 & 275 &  &  &  \\
+
+1997 & 7523 & 398 & 563 &  &  &  &  \\
+
+1998 & 8250 & 530 &  &  &  &  &  \\
+
+\end{tabular}
+\end{equation*}
+
+
+Ahora procederemos a hacer la tabla de reclamos acumulados para hacer los calculos respectivos:
+
+
+## Pagos acumulados
+
+\begin{equation*}
+\centering
+\begin{tabular}{ccrrrrrr}
+Año & Número de reclamos acumulados & \multicolumn{6}{c}{Pagos en años de desarrollo (\$1000s)} \\
+     & (incluidos IBNR) & 0 & 1 & 2 & 3 & 4 & 5 \\
+
+1993 & 6203 & 192 & 443 & 596 & 741 & 886 & 886\\
+
+1994 & 6372 & 205 & 485 & 680 & 830 & 932 &  \\
+
+1995 & 6505 & 230 & 575 & 920 & 1132 &  &  \\
+
+1996 & 6512 & 288 & 698 & 973 &  &  &  \\
+
+1997 & 7523 & 398 & 961 &  &  &  &  \\
+
+1998 & 8250 & 530 &  &  &  &  &  \\
+
+\end{tabular}
+\end{equation*}
+
+
+## Factores $M_{i/j}$
+
+$$m_{1/0} = \frac{443 + 485 + 575 + 698 + 961}{192 + 205 + 230 + 288 + 398} = 2.408$$
+
+$$m_{2/1} = \frac{596 + 680 + 920 + 973}{443 + 485 + 575 + 698} = 1.44$$
+
+$$m_{3/2} = \frac{741 + 830 + 1132}{596 + 680 + 920} = 1.231$$
+
+$$m_{4/3} = \frac{886 + 932}{741 + 830} = 1.157$$
+
+
+
+$$m_{5/4} = \frac{886}{886} = 1$$
+
+
+## Precios acumulados estimados
+
+\begin{equation*}
+\centering
+\begin{tabular}{ccrrrrrr}
+Año & Número de reclamos acumulados & \multicolumn{6}{c}{Pagos en años de desarrollo (\$1000s)} \\
+     & (incluidos IBNR) & 0 & 1 & 2 & 3 & 4 & 5 \\
+
+1993 & 6203 &  &  &  &  &  & \\
+
+1994 & 6372 &  &  &  &  &  &  932\\
+
+1995 & 6505 &  &  &  &  & 1310  &  1310\\
+
+1996 & 6512 &  &  &  & 1198 & 1387 & 1387 \\
+
+1997 & 7523 &  &  & 1384 & 1704 & 1972 & 1972 \\
+
+1998 & 8250 &  & 1277 & 1839  & 2264  & 2620 & 2620 \\
+
+\end{tabular}
+\end{equation*}
+
+
+## Provisiones estimadas
+
+\begin{equation*}
+\centering
+\begin{tabular}{ccrrrrrr}
+Año & Número de reclamos acumulados & \multicolumn{6}{c}{Pagos en años de desarrollo (\$1000s)} \\
+     & (incluidos IBNR) & 0 & 1 & 2 & 3 & 4 & 5 \\
+
+1993 & 6203 &  &  &  &  &  & 0\\
+
+1994 & 6372 &  &  &  &  &  &  0\\
+
+1995 & 6505 &  &  &  &  & 1310  &  0\\
+
+1996 & 6512 &  &  &  & 1198 & 189 & 0 \\
+
+1997 & 7523 &  &  & 1384 & 320 & 208 & 0 \\
+
+1998 & 8250 &  & 1277 & 562  & 425  & 356 & 0 \\
+
+\end{tabular}
+\end{equation*}
+
+\pagebreak
+
+
+
+
+
+# Punto 2
+
+## Contexto del Ejercicio:
+
+En este punto se describe un experimento de simulación para estimar la probabilidad de que una aseguradora no pueda cumplir con sus obligaciones, dado un conjunto específico de parámetros de riesgo y reservas.
+
+Este problema se basa en la distribución log-normal de la severidad de las reclamaciones y una tasa de frecuencia específica, tal como se describe en las notas de clase basadas en el texto de Hossack, Pollard, y Zehnwirth.
+
+## Parámetros del Modelo
+
+Los parámetros del modelo se definen como sigue:
+
+- **Distribución de la Severidad**: Log-normal con media de $8,500 y desviación estándar de $38,600.
+- **Frecuencia de Reclamos**: 0.015 por contrato.
+- **Número de Contratos**: 200.
+- **Reservas Libres**: $10,000.
+- **Cargo de Seguridad**: 5% de la prima de riesgo.
+- **Retención Neta después del Reaseguro**: $25,000.
+
+## Simulación en R
+
+```{r, message = FALSE}
+# Parámetros
+media_severidad <- 8500
+desviacion_severidad <- 38600
+frecuencia_reclamos <- 0.015
+num_contratos <- 200
+reservas_libres <- 10000
+cargo_seguridad <- 0.05
+retencion_neta <- 25000
+iteraciones <- 10000
+
+```
+
+**Función de Simulación**
+
+```{r, message = FALSE}
+simular_ruina <- function() {
+  # Simular número de reclamos
+  num_reclamos <- rbinom(1, num_contratos, frecuencia_reclamos)
+  
+  # Simular severidad de los reclamos
+  severidades <- rlnorm(num_reclamos, meanlog = log(media_severidad), 
+                        sdlog = log(1 + (desviacion_severidad / media_severidad)^2))
+  
+  # Aplicar retención neta
+  costo_total <- sum(pmin(severidades, retencion_neta))
+  
+  # Calcular ingreso por cargo de seguridad
+  ingreso_seguridad <- cargo_seguridad * num_contratos * media_severidad * frecuencia_reclamos
+  
+  # Comparar con reservas
+  return(costo_total > (reservas_libres + ingreso_seguridad))
+}
+
+# Ejecutar simulación
+resultados <- replicate(iteraciones, simular_ruina())
+
+# Estimar la probabilidad de ruina
+probabilidad_ruina <- mean(resultados)
+probabilidad_ruina
+
+```
+
+```{r, message = FALSE}
+cat( round(probabilidad_ruina * 100, 2), "%")
+
+```
+## Resultado
+
+La probabilidad estimada de que la aseguradora no pueda cumplir con sus obligaciones es 78.05%. Este resultado indica un riesgo significativo para la aseguradora.
+
+
+## Conclusión
+
+El enfoque de simulación proporciona una estimación más precisa de la probabilidad de ruina para la aseguradora bajo las condiciones dadas, en comparación con un enfoque basado en la aproximación normal, que puede no capturar adecuadamente la asimetría y la baja frecuencia de los reclamos.
+
+
+
+
+# Punto 3
+
+
+## Análisis de la Base de Datos fremotor1sev0304a de la Librería CASdatasets en R
+
+La base de datos fremotor1sev0304a, perteneciente a la librería CASdatasets de R, contiene información sobre seguros de automotor para privados en Francia, con registros de severidades entre los años 2003 y 2004. Este análisis se enfoca en ajustar una distribución lognormal a una submuestra de esta base de datos, generar un histograma con la distribución ajustada superpuesta, y evaluar la calidad del ajuste.
+
+## Ajuste de una Distribución Lognormal a la Submuestra Seleccionada e Informe de los Parámetros
+
+Primero, se seleccionó una submuestra de 150 observaciones de la base de datos utilizando el número de cédula 1042067088 de Juan Pablo Grajales Ciro para garantizar la reproducibilidad del análisis. Luego, se filtraron los valores positivos de la columna Payment para proceder con el ajuste de una distribución lognormal.
+
+```{r, message = FALSE}
+# Cargar la librería necesaria
+library(CASdatasets)
+library(MASS)       # Para ajustar la distribución lognormal
+library(ggplot2)    # Para la visualización
+library(tidyverse)
+library(Hmisc)
+library(readxl)
+library(pacman)
+
+# Cargar los datos
+data(fremotor1sev0304a)
+
+# Función para generar una submuestra basada en la cédula
+genera <- function(cedula) {
+  set.seed(as.numeric(cedula))
+  DatosSG <- fremotor1sev0304a[sample(1:nrow(fremotor1sev0304a), 150), ]
+  return(DatosSG)
+}
+
+# Generar la submuestra utilizando la cédula "1042067088"- Juan Pablo Grajales Ciro
+muestra_datos <- genera("1042067088")
+
+# Filtrar los valores positivos de Payment
+muestra_datos <- muestra_datos[muestra_datos$Payment > 0, ]
+
+
+```
+
+A continuación, se ajustó la distribución lognormal y se obtuvieron los parámetros Mu y Sigma:
+
+
+```{r, message = FALSE}
+# Asegurarnos de que la submuestra no está vacía y contiene valores numéricos positivos
+if(nrow(muestra_datos) > 0 & is.numeric(muestra_datos$Payment)) {
+  # Ajuste de la distribución lognormal utilizando la columna Payment
+  lognorm_fit <- fitdistr(muestra_datos$Payment, "lognormal")
+  
+  # Parámetros ajustados
+  mu <- lognorm_fit$estimate['meanlog']
+  sigma <- lognorm_fit$estimate['sdlog']
+  
+  cat("Parámetros ajustados:\n")
+  cat("Mu (media logarítmica):", mu, "\n")
+  cat("Sigma (desviación estándar logarítmica):", sigma, "\n")
+}
+
+
+```
+
+## Parámetros Ajustados:
+
+- **Mu (media logarítmica): 5.996295**
+- **Sigma (desviación estándar logarítmica): 1.224251**
+
+Estos parámetros reflejan las características de la distribución lognormal que mejor se ajusta a los datos de la submuestra.
+
+## Gráfico del Histograma con la Distribución Lognormal Superpuesta
+
+Para evaluar visualmente el ajuste, se generó un histograma de los pagos en la submuestra, y se superpuso la curva de la distribución lognormal ajustada.
+
+```{r, message = FALSE}
+ggplot(muestra_datos, aes(x = Payment)) +
+  geom_histogram(aes(y = ..density..), bins = 30, fill = "lightblue", color = "black") +
+  stat_function(fun = dlnorm, args = list(meanlog = mu, sdlog = sigma), color = "red", size = 1) +
+  labs(title = "Histograma con Distribución Lognormal Superpuesta",
+       x = "Pago (Payment)", y = "Densidad") +
+  theme_minimal() +
+  scale_x_continuous(breaks = seq(0, max(muestra_datos$Payment), by = 1000))
+
+
+```
+
+
+
+## Descripción del gráfico:
+
+- **Histograma:** Las barras del histograma muestran cómo se distribuyen los pagos en la submuestra. La mayoría de los pagos se concentra en valores menores a 2,000.
+
+- **Curva lognormal (en rojo):** La curva roja representa la distribución lognormal ajustada, la cual sigue razonablemente bien la tendencia decreciente observada en los datos, especialmente en la parte central del histograma.
+
+
+## Evaluación del Ajuste: ¿Hay un Buen Ajuste?
+
+**Análisis del ajuste:**
+
+- **Buen ajuste en la parte central del histograma:** La distribución lognormal se ajusta bien a los datos en el rango de 0 a 3,000, capturando la tendencia general de los pagos.
+
+- **Desviación en las colas:** La precisión del ajuste disminuye en las colas del histograma, especialmente hacia los valores más altos (por encima de 5,000). La curva lognormal tiende a subestimar la densidad en la región de 3,000 a 5,000 y a sobrestimar para valores superiores.
+
+## Conclusión
+
+Generalmente, el ajuste es bueno: La distribución lognormal es adecuada para modelar la mayor parte de los datos de pagos, especialmente en el rango central; Sin embargo, si los valores extremos son críticos para el análisis, podría ser necesario explorar distribuciones alternativas como la gamma o Weibull, que podrían proporcionar un mejor ajuste en las colas de la distribución.
+
+```{r, message=FALSE}
+library(CASdatasets)
+data(fremotor1sev0304a)
+genera <-function(cedula){set.seed(cedula)
+DatosSG <- fremotor1sev0304a[sample(1:9200,150),]
+}
+
+DatosSG <- genera(1042067088)
+```
+
+
+# Punto 4
+
+## Literal A
+
+Para la distribucion Lognormal estimada y con $\alpha = 0.05$ calcule las medidas $VaR(\alpha)$ y $ES(\alpha)$.
+
+```{r, echo=FALSE}
+mu_LN <-  log((mean(DatosSG$Payment)^2)/(sqrt(mean(DatosSG$Payment)^2 
++sd(DatosSG$Payment)^2))) 
+sigma_LN <- (log(1+(sd(DatosSG$Payment)^2)/(mean(DatosSG$Payment)^2))) 
+data.frame("mu_log"=mu_LN,"Sigma_log"=sigma_LN)
+```
+
+
+
+```{r, message = FALSE}
+alpha_<-0.05 
+VaR <-  qlnorm(1-alpha_,mu_LN,sigma_LN) 
+ES <- mean(DatosSG$Payment[DatosSG$Payment>=VaR]) 
+data.frame("VaR"=VaR, "ES"=ES) 
+```
+
+
+## Literal B
+
+Si se tiene un portafolio de 20 polizas, con una tasa de reclamos por poliza de 0 = 0.015 y un cargo de seguridad $\lambda = 0.05$ en la prima.
+
+las reservas necesarias al inicio de un periodo (año) $U_v$ para que la aseguradora pueda honrar los contratos con una confianza del 95% deben cumplir: De nuevo si X corresponde a la perdida en el portafolio.
+
+$$P(X > VaR(\alpha = 0.05)) = \alpha$$
+
+$$\Rightarrow VaR(\alpha) = Uv + (1 + \lambda) nm$$
+
+**¿Cuanto serian las reservas en este caso?**
+
+```{r, message = FALSE}
+n <- 20*0.015 
+m <- sqrt(mean(DatosSG$Payment^2)-sigma_LN^2) 
+UV <- VaR-(1+0.05)*n*m
+UV
+```
+
+Se espera que las reservas en este caso sean de: 2246
+
+
+## Literal C
+
+La idea con el **deficit esperado** $ES(\alpha)$ es que permite calcular reservas mas confiables de una forma sensible, en este caso calculariamos las reservas $U_E$ necesarias al inicio del periodo con base en la medida $ES(\alpha)$ asi
+
+
+$$ES(\alpha = 0.05) = U_E + (1 + \lambda) nm$$
+
+**¿Cuanto serian las reservas en este caso?**
+
+```{r, message = FALSE}
+UE <- ES-(1+0.05)*n*m 
+UE
+```
+
+Estas son las reservas necesarias para el inicio del periodo, las cuales son: 3753
+
+
+
+# Punto 5
+
+## Ajuste de la Distribución de Pareto
+
+### Cálculo de E[X] y VaR(0.05) de la lognormal:
+
+```{r, message = FALSE}
+EX_lognorm <- exp(mu + (sigma^2)/2)
+VaR_05 <- exp(mu + sigma * qnorm(0.05))
+```
+
+Se calcula la media esperada E[X] de la distribución lognormal y el cuantil VaR(0.05), que corresponde al valor en el percentil 5%.
+
+### Determinación de los parámetros de la distribución de Pareto:
+
+
+Los parámetros de la distribución de Pareto se obtienen utilizando el cuantil VaR(0.05)como $\beta$ y una fórmula para $\alpha$:
+
+```{r, message = FALSE}
+beta <- VaR_05
+alpha <- EX_lognorm / (EX_lognorm - beta)
+
+cat("Parámetros de la distribución de Pareto:\n")
+cat("Alpha:", alpha, "\n")
+cat("Beta:", beta, "\n")
+
+```
+Se calculan los parámetros $\alpha$ y $\beta$ para que la distribución de Pareto capture adecuadamente la cola derecha de los datos de Payment.
+
+## Visualización de las Colas
+
+Finalmente, se comparan gráficamente las colas de ambas distribuciones para evaluar el ajuste:
+
+```{r, message = FALSE}
+x <- seq(VaR_05, max(muestra_datos$Payment), length.out = 1000)
+pareto_density <- (alpha * beta^alpha) / (x^(alpha + 1))
+lognorm_density <- dlnorm(x, meanlog = mu, sdlog = sigma)
+
+ggplot() +
+  geom_line(aes(x = x, y = pareto_density), color = "blue", linetype = "dashed", size = 1) +
+  geom_line(aes(x = x, y = lognorm_density), color = "red", size = 1) +
+  labs(title = "Comparación de Colas: Lognormal vs Pareto",
+       x = "x", y = "Densidad",
+       subtitle = "Cola derecha ajustada a Pareto") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+
+```
+**Analisís**
+
+* La gráfica compara la densidad de la cola derecha de la distribución lognormal (rojo) y la distribución de Pareto ajustada (azul).
+
+* La línea discontinua azul representa la Pareto, que captura los valores más altos de Payment, mientras que la lognormal se ajusta a la mayoría de los datos.
+
+Este análisis demostró la efectividad de ajustar una distribución de Pareto a la cola derecha de una distribución lognormal, permitiendo capturar de manera precisa los riesgos extremos. La visualización comparativa sugiere que la distribución de Pareto es particularmente eficaz para modelar valores extremos que exceden un umbral específico, mejorando la representación de estos eventos raros.
+
+
+
+
+
+## Utilidad de la Distribución de Pareto en Seguros y Reaseguro
+
+### Modelado de Riesgos Extremos
+
+La distribución de Pareto es especialmente útil para modelar la cola derecha de una distribución, es decir, los eventos extremos que ocurren con baja frecuencia pero que tienen un gran impacto. En comparación con la distribución lognormal, que muestra un decaimiento más rápido en la cola, la distribución de Pareto asigna una mayor probabilidad a eventos extremadamente grandes. Esto es crucial para una aseguradora o reaseguradora, ya que los eventos raros pero de alta magnitud pueden tener consecuencias financieras devastadoras. La capacidad de la distribución de Pareto para capturar estos riesgos extremos la convierte en una herramienta adecuada para modelar la parte extrema de la distribución de pérdidas.
+
+### Estimación del Capital de Riesgo
+
+Para determinar el capital necesario que una aseguradora debe mantener en reserva para cubrir pérdidas potenciales en eventos catastróficos, es esencial contar con una estimación precisa de la cola derecha de la distribución de pérdidas. La distribución de Pareto, al ajustarse de manera más precisa a estos eventos extremos, ayuda a calcular de manera más exacta el capital requerido. Esto permite a las aseguradoras preparar una reserva adecuada para afrontar situaciones de gran magnitud y asegurar la estabilidad financiera en el caso de eventos imprevistos.
+
+### Planificación del Reaseguro
+
+La diferencia en las colas entre la distribución lognormal y la distribución de Pareto sugiere que la última puede capturar mejor el riesgo asociado con pérdidas grandes. Esta característica es fundamental para la negociación de contratos de reaseguro, que deben tener en cuenta el riesgo de eventos significativos. Si una aseguradora subestima la probabilidad de grandes pérdidas utilizando una distribución que no refleja adecuadamente la cola derecha (como la lognormal), podría quedar expuesta a riesgos significativos. La distribución de Pareto permite una mejor estimación del riesgo y una planificación más efectiva del reaseguro.
+
+### Priorización de la Gestión de Riesgos
+
+La utilización de la distribución de Pareto para modelar la cola derecha de las pérdidas permite a las aseguradoras identificar qué tipos de riesgos requieren una mayor atención y control. Esta capacidad para modelar y prever eventos extremos es importante en la gestión del riesgo, ya que facilita la priorización de medidas de mitigación en áreas donde los impactos potenciales son más significativos. Así, se pueden implementar estrategias de control más efectivas y enfocadas en los riesgos más críticos.
+
+***Conclusión final***    
+
+La distribución de Pareto, al capturar de manera más efectiva la frecuencia y el impacto de los eventos extremos en la cola derecha de la distribución de pérdidas, es una herramienta valiosa para aseguradoras y reaseguradoras. Su capacidad para modelar eventos catastróficos de gran magnitud permite una mejor gestión del riesgo, una planificación más precisa del capital necesario y una negociación más eficaz de contratos de reaseguro. En resumen, la distribución de Pareto contribuye a una gestión financiera más robusta y a una preparación adecuada frente a eventos adversos.
+

@@ -1,0 +1,670 @@
+---
+output:
+  pdf_document:
+    toc: true
+  html_document: default
+---
+
+\pagebreak
+
+# Punto 1
+
+1500 reclamos en relación al seguro de cierto tipo de fachada de vidrio revela un costo medio por reclamo de \$120 y una desviación estándar de \$15. Asumiendo que el costo de los reclamos \(X\) posee una distribución log-normal.
+
+
+## Literal A
+
+Calcule el costo $x$ de un reclamo tal que puede esperarse que 800 de las reclamaciones sean menores a $x$ y las otras 700 mayores que $x$
+
+Se sabe que la varianza de los reclamos es:
+      
+$$\sigma^2_x = e^{(2\mu + \sigma^2)} (e^{\sigma^2} - 1)$$
+
+Dónde:
+
+- $\mu = 4.78$ es la media de los reclamos.
+
+- $\sigma^2 = 0.015$ es la varianza de los reclamos.
+
+- $\sigma^2_x$ es la varianza del costo de los reclamos.
+
+
+Por lo tanto, aplicando esta fórmula al problema dado, podemos calcular la varianza del costo de los reclamos.
+
+Despejando para $\exp^{(\sigma^2)}$, se obtiene que:
+
+$$e^{(\sigma^2)} = \ln\left(\frac{152}{120^2} + 1\right) \sigma^2 = 0.015 \sigma = 0.12$$
+
+
+Luego, se sabe que la media de los reclamos es 120, lo que es igual a:
+
+
+
+$$\mu_x = 120 = e^{\mu +\frac{\sigma^2}{2}}$$
+
+
+$$120^2 = e^{(2\mu + \sigma^2)}$$
+
+
+Aplicando logaritmo a ambos lados de la igualdad, tenemos:
+
+$$\ln(120^2) = 2\mu + \ln\left(\frac{15^2}{120^2} + 1\right)$$
+
+Despejando, fácilmente se obtiene que:
+
+$$\mu = 4.78$$
+
+
+Finalmente calculamos el costo tal que $X_{800} < x$.
+
+
+Para calcular esta probabilidad, simplemente resolvemos:
+Luego, el costo que puede esperarse con 700 reclamaciones mayores a $x$ es:
+
+
+$$1500 \times P(X_{700} > x) = 700$$
+
+$$P(X > x) = \frac{700}{1500} \approx 0.46$$
+
+$$x = 120.34$$
+
+Luego, el costo que puede esperarse con 800 reclamaciones menores a $x$ es:
+
+$$1500 \times P(X_{800} < x) = 800$$
+
+$$P(X < x) = \frac{800}{1500} \approx 0.53$$
+
+$$x = 120$$
+
+El costo de un reclamo tal que puede esperarse que 800 de las reclamaciones sean menores a él y las otras 700 mayores es $120.34.
+
+
+## Literal B
+
+Estime también el número de reclamos en la muestra con tamaños menores a $100.
+
+Para calcular esta probabilidad, simplemente resolvemos:
+
+$$P(X_{100} > x) = \Phi \left( \frac{\ln(100) - \mu}{\sigma} \right) = \Phi \left( \frac{\ln(100) - 4.8}{0.1245} \right) = \Phi(-1.4019)$$
+
+Por tabla de distribución normal estándar negativa, tenemos que:
+
+$$P(X_{100} < x) \approx 0.0778$$
+
+Observamos que $0.0778 \approx 7.78 \%$ de las reclamaciones no excederán los $\$100$. Por lo tanto, el número estimado de los reclamos que no exceden los $\$100$ es 1167.
+
+
+# Punto 2
+
+Si el número de reclamos por póliza recibidos por un asegurador durante un mes puede asumirse con una distribución de Poisson con media de 0.01, calcule cuantas entre 80000 pólizas similares se esperan que den origen a más de 2 reclamos cada una en un año.
+
+Observamos que:
+
+$$\lambda = 0.01 \text{ reclamaciones/mes}$$
+
+Calculando la media para un año:
+
+$$\lambda = 0.01 \times 12$$
+
+$$\lambda = 0.12 \text{ reclamaciones/año}$$
+
+Con la anterior tasa anual de reclamaciones, estimamos la probabilidad de que una persona asegurada efectúe más de 2 reclamos durante un período igual a un año.
+
+$$P(X_{1} > 2) = 1 - P(0) - P(1) - P(2)$$
+
+$$= 1 - e^{(-\lambda)} \left(1 + \frac{\lambda^1}{1!} + \frac{\lambda^2}{2!} \right)$$
+
+$$= 1 - e^{(-0.012)} \left(1 + \frac{0.12^1}{1!} + \frac{0.12^2}{2!} \right)$$
+
+$$\approx 0.000263$$
+
+Finalmente se calcula el número total de reclamaciones de las 80000 pólizas que reclaman más de dos veces en el año:
+
+$$80000 \times P(X_{1} > 2)$$
+
+$$80000 \times 0.000263 = 21.06$$
+
+Se esperan que más de 21.06 de las 80000 pólizas den origen a más de 2 reclamaciones en un año.
+
+
+# Punto 3
+
+```{r, echo = FALSE}
+#library(CASdatasets)
+```
+
+
+```{r, echo = FALSE}
+#data(brvehins1d)
+```
+
+
+Para seleccionar la base de datos adecuada, sumamos los últimos dígitos de las cédulas de cada integrante del grupo: 6 (1000192466), 7 (1000637697) y 8 (1043067088). La suma total es 21. Luego, dividimos esta suma por 9, lo que nos da un residuo de 3. Por lo tanto, según este residuo, seleccionamos la base de datos correspondiente.
+
+## Literal A
+
+### Análisis de la Tabla por Cantidad de Reclamos
+
+La tabla presenta la distribución del número de reclamos observados en las pólizas de seguros. Cada fila representa una cantidad específica de reclamos, mientras que la columna "Numero observado de polizas" indica cuántas pólizas experimentaron esa cantidad particular de reclamos.
+
+Observamos que la mayoría de las pólizas (392,732) no tuvieron reclamos durante el período de tiempo analizado. A medida que aumenta el número de reclamos, el número de pólizas disminuye significativamente. Por ejemplo, solo hay una póliza que experimentó seis reclamos durante el período.
+
+Este análisis inicial nos proporciona una visión general de la distribución de reclamos en la base de datos. A continuación, podemos proceder a calcular la media y la varianza para obtener una comprensión más completa de la distribución de reclamos.
+
+```{r, echo = FALSE}
+DB <- read.csv("brvehins1d.csv")
+
+DB <- DB[,-1]
+```
+
+
+```{r, echo = FALSE}
+sub_rec = table(DB$ClaimNbFire)
+
+reclamos = data.frame(
+  "Numero de reclamos" = c(0, 1, 2, 4, 6),
+  "Numero observado de polizas" = c(sub_rec[1], sub_rec[2], sub_rec[3], sub_rec[4], sub_rec[5])
+)
+
+knitr::kable(reclamos, format = "markdown", caption = "Tabla por cantidad de reclamos")
+```
+
+Observamos que la mayoría de las pólizas (392,732) no tuvieron reclamos durante el período de tiempo analizado. A medida que aumenta el número de reclamos, el número de pólizas disminuye significativamente. Por ejemplo, solo hay una póliza que experimentó seis reclamos durante el período.
+
+Este análisis inicial nos proporciona una visión general de la distribución de reclamos en la base de datos. A continuación, podemos proceder a calcular la media y la varianza para obtener una comprensión más completa de la distribución de reclamos.
+
+### Calculando esperanza y varianza
+
+Para comprender mejor la distribución de reclamos en nuestras pólizas de seguros, calculamos la esperanza (o media) y la varianza.
+
+La esperanza se calcula como el promedio ponderado de la cantidad de reclamos, donde cada cantidad de reclamos se multiplica por el número observado de pólizas y se divide por el total de pólizas. La fórmula para la esperanza es:
+
+$$Esperanza = \sum_{i=1}^{n} \frac{x_i * f_i}{N}$$
+
+Donde:
+
+- $x_i$ es la cantidad de reclamos en el intervalo $i$
+
+- $f_i$ es la frecuencia (número observado de pólizas) en el intervalo $i$.
+
+- $N$ es el total de pólizas.
+
+```{r}
+total = sum(reclamos$Numero.observado.de.polizas)
+media <- list()
+for (i in 1:nrow(reclamos)){
+  media = append(media, reclamos[i,1]*reclamos[i,2]/total)
+}
+
+media = sum(unlist(media))
+```
+
+Después de realizar estos cálculos, obtenemos una esperanza de $0.0009082329$.
+
+Por otro lado, la varianza se calcula de manera similar, pero se suma el cuadrado de cada cantidad de reclamos antes de multiplicarlo por el número observado de pólizas y dividirlo por el total de pólizas. La fórmula para la varianza es:
+
+$$Varianza = \sum_{i=1}^{n} \frac{x_i^2 * f_i}{N} - Esperanza^2$$
+```{r}
+varianza = list()
+for (i in 1:nrow(reclamos)){
+  varianza = append(varianza, reclamos[i,1]^2*reclamos[i,2]/total)
+}
+varianza = sum(unlist(varianza)) - media^2
+```
+
+En nuestro caso, la varianza resulta ser $0.00106514$
+
+Estos valores nos brindan información crucial sobre la distribución de reclamos en nuestras pólizas de seguros, lo que nos permitirá realizar ajustes más precisos a nuestros modelos.
+
+
+En esta sección, realizamos ajustes de distribuciones de Poisson y Binomial Negativa a la variable "ClaimNbFire" para determinar cuál proporciona un mejor ajuste a los datos.
+
+
+### Poisson
+En el ajuste de la distribución de Poisson, utilizamos la esperanza (media) de los reclamos como parámetro $\lambda$. Este parámetro indica la tasa promedio de ocurrencia de reclamos por unidad de tiempo.
+
+$$\lambda = E[X] = 0.00106514$$
+
+
+```{r}
+lambda = media
+```
+
+#### Ajuste
+
+```{r}
+poisson_ajuste = ppois(DB$ClaimNbFire, lambda)*DB$ClaimNbFire
+```
+
+
+```{r, echo = FALSE}
+par(mfrow = c(2,2))
+
+plot(density(DB$ClaimNbFire), main = "Datos originales", 
+     xlab = "Numero de reclamos", ylab = "Cantidad observada")
+
+plot(density(poisson_ajuste), main = "Datos ajustados con poisson", 
+     xlab = "Numero de reclamos", ylab = "Cantidad observada")
+
+hist(DB$ClaimNbFire, main = "Datos originales", col = "lightblue", 
+     xlab = "Numero de reclamos", ylab = "Cantidad observada")
+
+hist(poisson_ajuste, main = "Datos ajustados con poisson", col = "lightblue", 
+     xlab = "Numero de reclamos", ylab = "Cantidad observada")
+```
+
+
+### Binomial negativa
+
+Para la distribución Binomial Negativa, calculamos los parámetros $p$ y $K$ utilizando la esperanza y la varianza. El parámetro $p$ representa la probabilidad de éxito en un solo ensayo, mientras que $K$ es el número de éxitos requeridos antes de detener el proceso de conteo.
+
+
+$$E[X] = \frac{K(1-p)}{p} = A$$
+
+$$\left.\begin{matrix}
+K(1-p) = pA
+&  & \\
+K = \frac{pA}{(1-p)}
+\end{matrix}\right\}Despejando \ en \ terminos \ de \ K$$
+
+
+$$V[X]= \frac{K(1-p)}{p^{2}}= B$$
+
+$$\left.\begin{matrix}
+ &  &\\
+\frac{\frac{pA}{(1-p)}\cdot (1-p)}{p^{2}}=B
+\\ 
+ &  &
+\end{matrix}\right\} Reemplazando\ K$$
+
+$$\frac{pA}{p^{2}}= B$$
+
+
+$$\frac{A}{p}=B$$
+
+$$p=\frac{A}{B} = \frac{0.0009082329}{0.00106514} = 0.8526885$$
+
+
+$$Reemplazando \ p\\$$
+
+$$\frac{\frac{A}{B}\cdot A}{(1-\frac{A}{B})}= \frac{\frac{A^{2}}{b}}{(1-\frac{A}{B})} =\frac{\frac{A^{2}}{B}}{\frac{B-A}{B}}=\frac{A^{2}\cdot B}{(B-A)B}$$
+
+
+$$K =\frac{A^{2}}{B-A}= \frac{ 0.0009082329^2}{0.00106514 - 0.0009082329} = 0.005257157$$
+
+
+
+```{r}
+p = media/varianza
+
+k = media^2/(varianza - media)
+```
+
+
+
+#### Ajuste
+
+```{r}
+nbinomial_ajuste = pnbinom(DB$ClaimNbFire, k, p)*DB$ClaimNbFire
+```
+
+Después de realizar los ajustes para ambas distribuciones, evaluaremos cuál proporciona un mejor ajuste a los datos, lo que nos permitirá tomar decisiones más informadas sobre el modelado de reclamos en nuestras pólizas de seguros.
+
+```{r, echo = FALSE}
+par(mfrow = c(2,2))
+
+plot(density(DB$ClaimNbFire), main = "Datos originales", 
+     xlab = "Numero de reclamos", ylab = "Cantidad observada")
+
+plot(density(nbinomial_ajuste), main = "Datos ajustados con poisson", 
+     xlab = "Numero de reclamos", ylab = "Cantidad observada")
+
+hist(DB$ClaimNbFire, main = "Datos originales", col = "lightblue", 
+     xlab = "Numero de reclamos", ylab = "Cantidad observada")
+
+hist(nbinomial_ajuste, main = "Datos ajustados con poisson", col = "lightblue", 
+     xlab = "Numero de reclamos", ylab = "Cantidad observada")
+```
+
+
+### ¿Cual es mejor?
+
+Después de realizar los ajustes para ambas distribuciones, evaluaremos cuál proporciona un mejor ajuste a los datos, lo que nos permitirá tomar decisiones más informadas sobre el modelado de reclamos en nuestras pólizas de seguros.
+
+
+```{r, echo = FALSE}
+# Calcular ECM para cada distribución
+ECM_poisson <- mean((DB$ClaimNbFire - poisson_ajuste)^2)
+
+ECM_nbinomial <- mean((DB$ClaimNbFire - nbinomial_ajuste)^2)
+
+# Mostrar los ECM
+cat("ECM Poisson:", ECM_poisson, "\n")
+cat("ECM Binomial Negativa:", ECM_nbinomial, "\n")
+
+# Determinar el mejor ajuste
+if (ECM_poisson < ECM_nbinomial) {
+  cat("Mejor ajuste: Poisson\n")
+} else if (ECM_nbinomial < ECM_poisson) {
+  cat("Mejor ajuste: Binomial Negativa\n")
+} else {
+  cat("Los ajustes tienen el mismo ECM\n")
+}
+
+```
+
+Dado que el valor del ECM es significativamente más bajo para la distribución Poisson (1.413448e-16) en comparación con la distribución binomial negativa (3.373777e-12), podemos concluir que la distribución Poisson es el mejor ajuste para estos datos en términos de ECM.
+
+En términos de homogeneidad, la diferencia en los valores del ECM sugiere que la distribución Poisson describe la variabilidad en los datos de manera más precisa que la distribución binomial negativa. Esto significa que la distribución Poisson tiene una mejor capacidad para modelar la estructura subyacente de los datos observados.
+
+Por lo tanto, en este caso, seleccionaríamos la distribución Poisson como el mejor ajuste debido a su menor ECM, lo que indica un ajuste más preciso a los datos observados.
+
+Al comparar las medias y medianas de las distribuciones ajustadas con las originales, podemos evaluar qué distribución se acerca más a los valores observados. En este caso, la distribución cuya media y mediana se acerquen más a las originales sería considerada como un mejor ajuste en términos de la estructura subyacente de los datos.
+
+```{r, echo = FALSE}
+# Calcular la media original de los datos observados
+media_original <- mean(DB$ClaimNbFire)
+
+# Calcular la media de la distribución Poisson ajustada
+media_poisson <- mean(poisson_ajuste)
+
+# Calcular la media de la distribución binomial negativa ajustada
+media_nbinomial <- mean(nbinomial_ajuste)
+
+# Imprimir las medias
+cat("Media original de los datos observados:", media_original, "\n")
+cat("Media de la distribución Poisson ajustada:", media_poisson, "\n")
+cat("Media de la distribución Binomial Negativa ajustada:", media_nbinomial, "\n")
+
+```
+
+Al comparar las medias de las distribuciones ajustadas con la media original de los datos observados, observamos que la media de la distribución Poisson ajustada es 0.0009082325, que es muy cercana a la media original de los datos observados (0.0009082329).
+
+
+## Literal B
+
+
+Análisis de la Tabla por Cantidad de Personas que Gastaron en Intervalos de Monto
+
+La tabla presenta la distribución de la cantidad de personas que gastaron en intervalos específicos de montos. Se seleccionaron 5 intervalos para esta distribución, basados en la distribución de los datos. Cada fila representa un intervalo de monto, mientras que la columna "Cantidad de Personas" indica cuántas personas gastaron dentro de ese intervalo particular.
+
+```{r, echo = FALSE}
+# Se calcula el rango total de montos
+rango_total <- range(DB$ClaimAmountFire)
+
+# Definir el número de intervalos
+num_intervalos <- 5
+
+# Calcular el ancho de los intervalos
+ancho_intervalo <- diff(rango_total) / num_intervalos
+
+# Crear los límites de los intervalos
+limites_intervalos <- seq(rango_total[1], rango_total[2], by = ancho_intervalo)
+
+# Contar la cantidad de personas que gastaron en cada intervalo
+personas_por_intervalo <- cut(DB$ClaimAmountFire, breaks = limites_intervalos, right = FALSE)
+conteo_por_intervalo <- table(personas_por_intervalo)
+
+# Eliminar el último límite de los intervalos
+limites_intervalos <- limites_intervalos[-length(limites_intervalos)]
+
+# Crear los nombres de los intervalos
+nombres_intervalos <- paste0(
+  format(limites_intervalos, scientific = FALSE, trim = TRUE),
+  ", ",
+  format(c(limites_intervalos[-1], max(DB$ClaimAmountFire)), scientific = FALSE, trim = TRUE)
+)
+
+# Crear una tabla con los resultados
+tabla_intervalos <- data.frame(
+  "Intervalo de Monto" = nombres_intervalos,
+  "Cantidad de Personas" = as.vector(conteo_por_intervalo)
+)
+
+# Se muestra la tabla en formato markdown
+knitr::kable(tabla_intervalos, format = "markdown", caption = "Cantidad de personas que gastaron en intervalos de monto")
+```
+
+Observamos que la mayoría de las personas (393,042) gastaron entre 0.0 y 58,044.8 unidades monetarias durante el período de tiempo analizado. A medida que aumenta el intervalo de monto, la cantidad de personas disminuye significativamente. Por ejemplo, solo hay una persona que gastó entre 232,179.2 y 290,224.0 unidades monetarias durante el período.
+
+Este análisis inicial nos proporciona una visión general de la distribución del gasto en la base de datos. A continuación, podemos proceder a calcular la media y la varianza para obtener una comprensión más completa de la distribución del gasto.
+
+### Calculo de esperanza y varianza
+
+Para facilitar los cálculos de esperanza y varianza, primero construimos un marco de datos con los intervalos de montos. Luego, utilizamos este marco de datos para calcular la esperanza y la varianza.
+
+*Construcción del Marco de Datos de Intervalos
+Creamos un marco de datos que incluye los límites inferior y superior de cada intervalo de montos.
+
+```{r}
+# Esto nos ayudara a facilitar los calculos de esperanza y varianza
+intervalos <- data.frame()
+
+for (i in 1:length(nombres_intervalos)){
+  
+  intervalos[i,1] <- as.numeric(unlist(strsplit(nombres_intervalos[i],", "))[1])
+  
+  intervalos[i,2] <- as.numeric(unlist(strsplit(nombres_intervalos[i],", "))[2])
+}
+
+total <- sum(tabla_intervalos$Cantidad.de.Personas)
+```
+
+**Cálculo de la Esperanza (Media)**
+
+La esperanza o media se calcula ponderando cada intervalo por la cantidad de personas en ese intervalo y dividiendo por el total de personas.
+
+```{r}
+media <- list()
+
+for (i in 1:length(nombres_intervalos)){
+  media <- append(media, mean(unlist(intervalos[i,]))*tabla_intervalos$Cantidad.de.Personas[i]/total)
+}
+
+media <- sum(unlist(media))
+
+media
+```
+
+La fórmula utilizada para calcular la esperanza es:
+
+$$\mu = \sum_{i=1}^{n} ( \frac{(a_i + b_i)}{2} * \frac{N_i}{N})$$
+
+donde:
+
+- $a_i$ y $b_i$ son los límites inferior y superior del intervalo $i$ respectivamente
+
+- $N_i$ es la cantidad de personas en el intervalo $i$
+
+- $N$ es el total de personas en todos los intervalos.
+
+
+***Cálculo de la Varianza**
+
+La varianza se calcula sumando las varianzas de cada intervalo ponderadas por la cantidad de personas en ese intervalo, y luego restando el cuadrado de la media.
+
+```{r}
+varianza <- list()
+
+for (i in 1:length(nombres_intervalos)){
+  varianza <- append(varianza, mean(unlist(intervalos[i,]))^2*tabla_intervalos$Cantidad.de.Personas[i]/total)
+}
+
+varianza <- sum(unlist(varianza)) - media^2
+
+varianza
+
+```
+La fórmula utilizada para calcular la varianza es:
+
+$$\sigma^2 = \sum_{i=1}^{n} \left( \left( \frac{(a_i + b_i)}{2} \right)^2 * \frac{N_i}{N} \right) - \mu^2$$
+
+donde los términos tienen el mismo significado que en la fórmula de la esperanza.
+
+Este análisis estadístico proporciona una comprensión más completa de la distribución del gasto en la base de datos. La esperanza y la varianza nos permiten entender mejor la tendencia central y la dispersión de los datos, respectivamente.
+
+
+
+### Gamma
+
+Este análisis tiene como objetivo estimar los parámetros $\alpha$ y $\beta$ para la distribución Gamma, con el fin de ajustarla a nuestros datos de severidad.
+
+$$E[X]=\frac{\alpha}{\beta}=A$$
+
+$$\left.\begin{matrix}\alpha= A\beta\end{matrix}\right\}Despejando\ alpha$$
+
+$$\left.\begin{matrix}\alpha= A\cdot \frac{A}{B}\end{matrix}\right\}Reemplazando\ beta$$
+
+$$\alpha = \frac{A^{2}}{B} = \frac{29029.49^2}{908528.6} = 927.5561$$
+
+$$V[X]=\frac{\alpha}{\beta^{2}}=B$$
+
+$$=\left.\begin{matrix} \frac{A\beta}{\beta^{2}}=B\end{matrix}\right\} Reemplazando \ alpha$$
+
+$$\frac{A}{\beta}=B$$
+
+$$\beta=\frac{A}{B} = \frac{29029.49}{908528.6} = 0.0319522$$
+
+Estimación de $\alpha$ (alpha):
+
+La esperanza ($E[X]$) se define como el producto de los parámetros $\alpha$ y $\beta$, representado como $A$. Despejamos $\alpha$ en términos de $A$ y $\beta$. Reemplazamos el valor de $\beta$ con el resultado obtenido previamente. Calculamos $\alpha$ utilizando los valores dados, lo que resulta en $\alpha = 927.5561$.
+
+Estimación de $\beta$ (beta):
+
+La varianza se expresa en términos de $\alpha$ y $\beta$. Reorganizamos la fórmula y reemplazamos $\alpha$ con el valor calculado previamente. Despejamos $\beta$ en términos de $A$ y $B$. Calculamos $\beta$ utilizando los valores proporcionados, lo que resulta en $\beta = 0.0319522$.
+
+Estos cálculos nos proporcionan los parámetros necesarios para ajustar la distribución Gamma a nuestros datos de severidad, lo que nos permitirá comprender mejor la distribución de pérdidas en nuestras pólizas de seguros.
+
+
+```{r}
+alpha = media^2/varianza
+beta = media/varianza
+```
+
+
+#### Ajuste
+
+El ajuste de la distribución Gamma nos proporciona una estimación de la probabilidad acumulada de pérdida para cada observación en nuestros datos de severidad, lo que nos permite comprender mejor la distribución y comportamiento de las pérdidas en nuestras pólizas de seguros.
+
+
+```{r}
+gamma_ajuste = pgamma(DB$ClaimAmountFire, alpha, beta)*DB$ClaimAmountFire
+```
+
+
+```{r, echo = FALSE}
+par(mfrow = c(2,2))
+
+plot(density(DB$ClaimNbFire), main = "Datos originales", 
+     xlab = "Numero de reclamos", ylab = "Cantidad observada")
+
+plot(density(gamma_ajuste), main = "Datos ajustados con poisson", 
+     xlab = "Numero de reclamos", ylab = "Cantidad observada")
+
+hist(DB$ClaimNbFire, main = "Datos originales", col = "lightblue", 
+     xlab = "Numero de reclamos", ylab = "Cantidad observada")
+
+hist(gamma_ajuste, main = "Datos ajustados con poisson", col = "lightblue", 
+     xlab = "Numero de reclamos", ylab = "Cantidad observada")
+```
+
+
+
+
+### Log-normal
+El propósito de este análisis es estimar los parámetros $\mu$ y $\sigma$ para la distribución Log-normal, con el objetivo de ajustarla a nuestros datos de severidad.
+
+$$E[X] = e^{\mu+\frac{\sigma^{2}}{2}}=A$$
+
+$$\mu + \frac{\sigma^2}{2} = log(A)$$
+
+$$\mu=log(A)-\frac{\sigma^2}{2}$$
+
+
+$$V[X]= e^{2\mu+\sigma^2}(e^{\sigma^2}-1)= B$$
+
+$$B= e^{2(log(A)-\frac{\sigma^2}{2})+\sigma^2}(e^{\sigma^2}-1)$$
+
+$$B = e^{2*ln(A)} (e^{\sigma^2} - 1)$$
+
+$$e^{\sigma^2} - 1 = \frac{B}{e^{2*ln(A)} }$$
+
+$$e^{\sigma^2} = \frac{B}{e^{2*ln(A)}} + 1$$
+
+
+$$\sigma^2 = log(\frac{B}{A^2} + 1)$$
+
+Teniamos que:
+
+$$\mu=log(A)-\frac{\sigma^2}{2}$$
+
+
+$$\mu=log(A)-\frac{log(\frac{B}{A^2} + 1)}{2}$$
+
+```{r}
+miu = log(media) - (log(varianza/media^2 + 1))/2
+miu
+sigma2 = log(varianza/media^2 + 1)
+sigma2
+
+```
+
+Estimación de $\mu$ (miu):
+
+La media ($E[X]$) se calcula utilizando la fórmula que involucra los parámetros $\mu$ y $\sigma$, representada como $A$. Despejamos $\mu$ en términos de $A$ y $\sigma$. Reemplazamos el valor de $\sigma$ con el resultado calculado previamente. Calculamos $\mu$ utilizando los valores dados, lo que resulta en $\mu = 9.078611$.
+
+Estimación de $\sigma$ (sigma):
+
+La varianza se expresa en términos de $\mu$ y $\sigma$. Reorganizamos la fórmula y reemplazamos $\mu$ con el valor calculado previamente. Despejamos $\sigma$ en términos de $A$ y $B$. Calculamos $\sigma$ utilizando los valores proporcionados, lo que resulta en $\sigma = 0.0319522$.
+
+Estos cálculos nos proporcionan los parámetros necesarios para ajustar la distribución Log-normal a nuestros datos de severidad, lo que nos permitirá comprender mejor la distribución de pérdidas en nuestras pólizas de seguros.
+
+Sin embargo, con estos resultados:
+
+$\mu = 9.929221$
+
+$\sigma = 0.6936874$
+
+
+
+#### Ajuste
+El ajuste se realiza multiplicando la probabilidad acumulada por el valor correspondiente en los datos de severidad, lo que nos proporciona una estimación del valor esperado para cada observación en la distribución log-normal.
+
+Este ajuste nos permite visualizar cómo se distribuyen los datos en relación con la distribución log-normal y evaluar la idoneidad del ajuste de la distribución a los datos observados.
+
+```{r}
+lnormal_ajuste = plnorm(DB$ClaimAmountFire, miu, sqrt(sigma2))*DB$ClaimAmountFire
+```
+
+
+```{r, echo = FALSE}
+par(mfrow = c(2,2))
+
+plot(density(DB$ClaimNbFire), main = "Datos originales", 
+     xlab = "Numero de reclamos", ylab = "Cantidad observada")
+
+plot(density(lnormal_ajuste), main = "Datos ajustados con poisson", 
+     xlab = "Numero de reclamos", ylab = "Cantidad observada")
+
+hist(DB$ClaimNbFire, main = "Datos originales", col = "lightblue", 
+     xlab = "Numero de reclamos", ylab = "Cantidad observada")
+
+hist(lnormal_ajuste, main = "Datos ajustados con poisson", col = "lightblue", 
+     xlab = "Numero de reclamos", ylab = "Cantidad observada")
+```
+
+
+Los percentiles 95% para ambas distribuciones son 0. Esto puede indicar que los datos están muy concentrados en valores bajos, lo que resulta en que el 5% de las pérdidas más altas sean muy similares a las pérdidas más bajas.
+
+```{r}
+# Percentil 95% para distribución LogNormal
+percentil_95_lognormal <- quantile(lnormal_ajuste, 0.95)
+
+# Percentil 95% para distribución Gamma
+percentil_95_gamma <- quantile(gamma_ajuste, 0.95)
+
+# Mostrar los resultados
+cat("Percentil 95% para distribución LogNormal:", percentil_95_lognormal, "\n")
+cat("Percentil 95% para distribución Gamma:", percentil_95_gamma, "\n")
+
+```

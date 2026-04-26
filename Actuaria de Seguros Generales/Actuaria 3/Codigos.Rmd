@@ -1,0 +1,304 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+# Punto 1
+
+### Preparación de los Datos
+
+
+```{r, eval=FALSE}
+# Cargar la base de datos
+library(insuranceData)
+data("dataOhlsson")
+
+# Filtrar las reclamaciones con severidad no nula
+data_filtrada <- subset(dataOhlsson, skadkost > 0)
+
+# Seleccionar aleatoriamente una submuestra de 500 registros
+set.seed(1042067088)  # Para hacer la muestra reproducible
+submuestra <- data_filtrada[sample(nrow(data_filtrada), 500), ]
+
+# Cantidad de registros reducido
+nrow(data_filtrada) 
+
+# Verificar la estructura de la submuestra
+str(submuestra)
+
+
+```
+
+
+# Punto 2
+
+
+## Modelo GLM
+
+
+```{r, eval=FALSE}
+glm_punt2 = glm(skadkost ~ factor(mcklass) + kon, family =Gamma(link = "log"), data = data_filtrada)
+```
+
+## Deviance del modelo
+
+
+```{r, eval=FALSE}
+
+# Calcular la desviance del modelo ajustado
+desviance_glm <- deviance(glm_punt2)
+
+# Crear un data frame para mostrar la deviancia
+resultado_deviance <- data.frame(
+  Modelo = "Modelo Ajustado",
+  Deviance = desviance_glm
+)
+
+# Mostrar la deviancia con kable
+library(knitr)
+kable(resultado_deviance, caption = "Desviancia del Modelo Ajustado")
+
+
+```
+
+
+```{r, eval=FALSE}
+# Ajustamos el modelo nulo
+modelo_nulo <- glm(skadkost ~ 1, family = Gamma(link = "log"), data = data_filtrada)
+
+# Calculamos la deviance del modelo nulo
+deviance_nulo <- deviance(modelo_nulo)
+
+# Crear un data frame para mostrar la deviancia del modelo nulo
+resultado_deviance_nulo <- data.frame(
+  Modelo = "Modelo Nulo",
+  Deviance = deviance_nulo
+)
+
+# Mostrar la deviancia con kable
+library(knitr)
+kable(resultado_deviance_nulo, caption = "Desviancia del Modelo Nulo")
+
+```
+
+
+
+## LRT test
+
+```{r, eval=FALSE}
+library(lmtest)
+
+modelo_completo = glm_punt2
+
+#KON
+
+modelo_reducido <- glm(skadkost ~ factor(mcklass), family =Gamma(link = "log"), data = data_filtrada)
+
+# MCKLASS
+
+modelo_reducido2 <- glm(skadkost ~ kon, family =Gamma(link = "log"), data = data_filtrada)
+
+
+
+kon = lrtest(modelo_reducido,modelo_completo)
+
+mcklass = lrtest(modelo_reducido2,modelo_completo)
+```
+
+
+```{r, eval=FALSE}
+knitr::kable(data.frame(
+  "Factor de clasificacion" = c("Kon", "Mcklass"),
+  "fs - fr" = c(kon$`#Df`[2] - kon$`#Df`[1], mcklass$`#Df`[2] - mcklass$`#Df`[1]),
+  "fs" = c(kon$`#Df`[2], mcklass$`#Df`[2]),
+  "Test statistic" = c(kon$Chisq[2], mcklass$Chisq[2]),
+  "Valor-p" = round(c(kon$`Pr(>Chisq)`[2], mcklass$`Pr(>Chisq)`[2]), 5)
+), caption = "LRT test excluyendo el factor de clasificacion en cuestion")
+```
+
+
+## Relatividades del modelo
+
+
+```{r, eval=FALSE}
+coeficientes <- coef(glm_punt2)
+relatividades <- exp(coeficientes)
+
+# Crear una tabla de relatividades tarifarias
+tabla_relatividades <- data.frame(Factor = names(coeficientes),
+                                  Coeficiente = coeficientes,
+                                  "Estimacion relatividad" = round(relatividades,3))
+```
+
+
+```{r, eval=FALSE}
+# Cargar librerías necesarias
+library(stats4)
+library(MASS)
+
+# Obtener la matriz de covarianza de los coeficientes estimados
+cov_matrix <- vcov(glm_punt2)
+
+# Calcular la matriz de información de Fisher
+fisher_info <- solve(cov_matrix)
+
+fisher_info <- solve(fisher_info)
+
+intervalo1 = data.frame(
+  "Inferior" = coeficientes -  1.96*sqrt(diag(fisher_info)),
+  "Superior" = coeficientes +  1.96*sqrt(diag(fisher_info))
+)
+
+intervalo2 = exp(intervalo1)
+```
+
+
+```{r, eval=FALSE}
+tabla = cbind(tabla_relatividades[-1,3], intervalo2[-1,])
+
+colnames(tabla) = c("Estimacion relatividad", "Inferior", "Superior")
+```
+
+
+
+```{r, echo=FALSE}
+# Crear el data frame original
+tabla <- data.frame(
+  X1 = c("factor(mcklass)2", "factor(mcklass)3", "factor(mcklass)4", 
+         "factor(mcklass)5", "factor(mcklass)6", "factor(mcklass)7", "konM"),
+  "Estimacion relatividad" = c(0.710, 1.545, 1.043, 1.031, 1.127, 1.273, 1.423),
+  "Inferior" = c(0.4092674, 0.9670416, 0.6318399, 0.6431859, 0.7082538, 0.3461334, 0.9755716),
+  "Superior" = c(1.231375, 2.466852, 1.722757, 1.652377, 1.792155, 4.679413, 2.074406),
+  stringsAsFactors = FALSE  # Evitar que los datos se conviertan en factores
+)
+
+# Crear la nueva fila con los nombres correctos de columnas
+nueva_fila <- data.frame(
+  X1 = "factor(mcklass)1",  # Valor para la columna sin nombre
+  "Estimacion relatividad" = 1,
+  "Inferior" = NA,
+  "Superior" = NA,
+  stringsAsFactors = FALSE
+)
+
+# Crear la nueva fila con los nombres correctos de columnas
+nueva_fila2 <- data.frame(
+  X1 = "konK",  # Valor para la columna sin nombre
+  "Estimacion relatividad" = 1,
+  "Inferior" = NA,
+  "Superior" = NA,
+  stringsAsFactors = FALSE
+)
+
+# Agregar la nueva fila al principio del data frame
+tabla_actualizada <- rbind(nueva_fila, tabla)
+tabla_actualizada <- rbind(tabla_actualizada, nueva_fila2)
+
+colnames(tabla_actualizada)[1] <- ""
+
+# Mostrar la tabla actualizada
+knitr::kable(tabla_actualizada, caption = "Tabla relatividades y intervalo de confianza gamma_j")
+
+```
+
+
+# Punto 3
+
+
+```{r, eval=FALSE, message=FALSE}
+library(mgcv)
+
+# Filtrar los datos para asegurarse de que duration > 0
+data_filtrada <- data_filtrada[data_filtrada$duration > 0, ]
+
+# Calcula la tasa de reclamaciones
+tasa_reclamos <- data_filtrada$antskad / data_filtrada$duration
+
+# Ajusta el modelo GAM con splines suavizados y familia Gamma
+reg.splines <- gam(tasa_reclamos ~ s(agarald, bs = "cr", k = 10), 
+                   family = Gamma(link = "log"), data = data_filtrada)
+
+# Predicciones
+pred <- predict(reg.splines, newdata = data_filtrada, type = "response", se.fit = TRUE)
+```
+
+
+```{r, eval=FALSE}
+plot(data_filtrada$agarald, pred$fit, type="s", xlab="Age of the driver",
+     ylab="Annualized Frequency", col="white")
+
+# Línea de predicción
+lines(data_filtrada$agarald, pred$fit, col = "blue", lwd = 2)
+
+# Calcular intervalos de confianza (asumiendo que pred$se.fit existe)
+lower_bound <- pred$fit - 2 * pred$se.fit  # Límite inferior
+upper_bound <- pred$fit + 2 * pred$se.fit  # Límite superior
+
+# Agregar líneas de intervalo de confianza
+lines(data_filtrada$agarald, lower_bound, col = "grey", lty = 2)  # Límite inferior
+lines(data_filtrada$agarald, upper_bound, col = "grey", lty = 2)  # Límite superior
+
+# Agregar la línea de referencia
+abline(h = sum(data_filtrada$antskad) / sum(data_filtrada$duration), lty = 2, col = "red")
+
+# Opcional: sombrear el área del intervalo de confianza
+polygon(c(data_filtrada$agarald, rev(data_filtrada$agarald)),
+        c(lower_bound, rev(upper_bound)), col = rgb(0.8, 0.8, 0.8, 0.5),border=NA)
+```
+
+
+## Segmentacion de los datos
+
+### Histograma
+
+```{r, eval=FALSE}
+hist(data_filtrada$agarald)
+```
+
+
+### Bins de igual ancho
+
+Este codigo se hizo completamente en python al ver la dificultad de realizarlo en R
+
+```{r, eval=FALSE}
+# Importacion de librerias necesarias
+import pandas as pd
+from sklearn.preprocessing import KBinsDiscretizer
+import matplotlib.pyplot as plt
+
+# Importacion de la base de datos
+base = pd.read_csv("base.csv")
+
+# Creacion de bins
+interval_discretizer = KBinsDiscretizer(n_bins=5, encode='ordinal', strategy='uniform')
+
+base['disc_agarald_interval'] = interval_discretizer.fit_transform(base[['agarald']])
+
+# Graficar el histograma
+plt.hist(base['disc_agarald_interval'], bins=5, edgecolor='black')
+plt.xlabel('Intervalos')
+plt.ylabel('Frecuencia')
+plt.title('Histograma de disc_agarald_interval')
+plt.show()
+```
+
+
+```{r, eval=FALSE}
+#Codigo para mostrar los bordes de los intervalos y el numero de los bins para poder visualizar como se categorizo
+
+bin_edges = interval_discretizer.bin_edges_
+n_bins = interval_discretizer.n_bins_
+
+print("Bordes de los intervalos:", bin_edges)
+print("Número de intervalos:", n_bins)
+```
+
+
+
+```{r, eval=FALSE}
+knitr::kable(
+  data.frame("Bordes de intervalos" = c(17. , 27.2, 37.4, 47.6, 57.8, 68. ))
+, caption = "Intervalos discretizacion con 5 bins")
+```
+
+
