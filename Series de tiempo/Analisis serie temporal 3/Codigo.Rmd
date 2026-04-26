@@ -1,0 +1,347 @@
+---
+output:
+  pdf_document:
+    latex_engine: xelatex
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+library(dplyr)
+```
+
+\begin{center}
+{\scshape\Huge Trabajo 3\par}
+\vfill
+{\LARGE Katerin Gómez C\par}
+{\LARGE Juan Diego Espinosa H\par}
+{\LARGE Daniel Felipe Puentes R.\par}
+{\LARGE Juan Pablo Chalarca.\par}
+\vfill
+{\scshape\Large SERIES DE TIEMPO UNIVARIADAS  \par}
+{\scshape\Large 2024-1 \par}
+{\LARGE\LARGE Cesar Augusto Gomez Velez
+ \par}
+\vfill
+\begin{figure}
+  \center
+  \includegraphics[width=6cm, height=4cm]{Escudo_UN}
+\end{figure}
+\vspace{1cm}
+
+\vfill
+{\bfseries\LARGE Universidad Nacional de Colombia \par}
+{\bfseries\LARGE Sede Medellín \par}
+{\scshape\Large Facultad de Ciencias \par}
+\vfill
+{\Large Medellín, Septiembre 2024 \par}
+
+\end{center}
+ 
+\newpage
+
+\section{Punto 1}
+
+Para la serie de tiempo considerada, separe los datos correspondientes a los últimos 2 años para evaluar pronósticos de la serie y ajuste un modelo ARIMA estacional, a la parte restante de los datos discutiendo el proceso de ajuste paso a paso.
+
+Para la elección de la base de datos del trabajo, escogimos el ultimo digito del número de cedula de cada uno de lo cuatro integrantes del grupo (9, 0, 2, 6) donde la suma de este da 17, y su residuo cuando se divide por 4 es de 1. Por lo que nuestra base de datos será `unemp`
+
+\subsection{Literal A}
+
+Gráfica y examen inicial de los datos.
+
+
+Para graficar y hacer el analisis inicial, hay que filtrar la serie de tiempo discriminando los dos ultimos años:
+
+```{r}
+serie1 <- astsa::unemp
+serie <- stats::window(serie1, end = c(1976, 12)) 
+plot(serie, col = "blue", main = "Desempleo en EE.UU", ylab = "Desempleo", xlab = "Tiempo")
+```
+En la gráfica, inicialmente no se aprecia estacionalidad clara a simple vista lo que implicaria que una transformación a la serie podria ser de utilidad. Aunque la serie fluctua, se aprecia una tendencia creciente aproximadamente despues de 1970 y, se aprecian pequeños ciclos durante el tiempo
+
+
+\subsection{Literal B}
+
+Transformación de los datos en caso de ser necesaría.
+
+Para la transformación de la serie, se procede a realizar una transformación Box-Cox de la siguiente manera:
+
+\[Z^{\lambda} = \begin{cases}
+\frac{(Z^\lambda - 1)}{{\lambda}} & \text{si } \lambda \neq 0 \\
+\ln(Z) & \text{si } \lambda = 0
+\end{cases}\]
+
+```{r, warning=F, message=F}
+library(forecast)
+
+lambda_optimo <- round(BoxCox.lambda(serie, method=c("guerrero"), lower=-2, upper=2), 2)
+
+lambda_optimo
+```
+En este caso, el valor de $\lambda = 0.53$, como no fue un valor igual a 0 no se utiliza la transformacion logaritimica, por lo tanto se procede con la **Box-Cox**, esta transformación queda de la siguiente manera:
+
+\[Z^{0.53} = 
+\frac{(Z^{0.53} - 1)}{0.53}\]
+
+```{r, warning=F, message=F}
+serie_transformada <- serie^lambda_optimo
+plot(serie_transformada, type="l", col="blue", main="Serie Transformada (Box-Cox)",
+     xlab="Tiempo", ylab="Valor Transformado")
+```
+
+La transformación estabilizó un poco la varianza de la serie, esto se evidencia con la no presencia de tantas fluctuaciones como en la serie original, adicionalmente se aprecia una tendencia (creciente) mucho más clara a comparación de la serie original. A pesar de la transformación se siguen apreciando ciclos lo que indica que hay presencia de componentes estacionales en esta
+
+\subsection{Literal C}
+
+Orden de diferenciación e identificación del modelo (grados de los polinomios).
+
+Para iniciar la identificación del modelo, se procede a hacer una identificación grafica inicial  de la serie por el ACF y el PACF
+
+```{r, warning=F, message=F}
+ggtsdisplay(serie_transformada, main = "Serie de desempleo")
+```
+Primeramente, en el ACF se aprecia que hay un decaimiento lento y gradual aproximadamente cada 12 rezagos, lo que indicaría que la serie no es estacionaria. Esto indicaría que seria adecuado diferenciar la serie y analizar el ACF subyacente de esta
+
+Por otro lado, el PACF muestra un gran corte en el primer rezago lo que es un claro indicio de que hay que diferenciar la serie, y luego este disminuye rapidamente hasta el aproximadamente el rezago 13, este patrón se repite de forma periodica
+
+En vista a lo anterior se procede diferenciar estacionalmente:
+
+```{r}
+serie_diff <- diff(serie_transformada, lag = 12)
+ggtsdisplay(serie_diff, main = "Serie de desempleo difenciada no estacional")
+```
+Ahora, analizando los nuevos gráficos de la serie diferenciada se sigue apreciando que la serie sigue presentando problemas de varianza y de media 0
+
+El ACF muestra un patrón de decaimiento más rápido comparado con la serie original lo que indica que aún persisten problemas de estacionalidad, estas son seguidas de un patrón ondulatorio decreciente. Mientras el PACF muestra picos significativos con cierta periodicidad, aunque menos pronunciados que en la serie original
+
+Dado que persisten los problemas de estacionalidad, se vuelve a diferenciar regularmente:
+
+```{r}
+serie_diff_diff <- diff(diff(serie_transformada, lag = 12))
+ggtsdisplay(serie_diff_diff, main = "Serie de desempleo difenciada regularmente")
+```
+
+La serie se aprecia mas estabilizada alrededor de la media cero, sin embargo, aún se aprecian ciertas fluctuaciones periodicas y falta de varianza constante, lo que sugiere que la serie aún no es completamente estacional
+
+En el ACF, se sigue observando un pequeño decaimiento en los primeros rezagos, lo que sugiere que aun hay componentes de no estacionariedad, incluso después de la primera diferenciación
+
+Dicho esto, se procede a diferenciar la serie para encontrar su componente estacional:
+
+```{r}
+serie_diff_diff_diff <- diff(diff(diff(serie_transformada, lag = 12)))
+ggtsdisplay(serie_diff_diff_diff, main = "Serie de desempleo difenciada estacionalmente")
+```
+Esta vez, la serie parece ser estacionaria, manteniendo una media y una varianza constante (a pesar de tener un par de outliers)
+
+
+\subsection{Literal D}
+
+Estimación de parámetros y diagnóstico de residuales del modelo seleccionado.
+
+Con base al analisis hecho en el literal anterior, es conveniente elegir un modelo ARIMA estacional (SARIMA) de la siguiente manera:
+
+- **Componente no estacional**: 
+
+  - Debido a que no hay corte en el primer rezago del PACF, $p = 0$
+  - Como la serie fue diferenciada dos veces para lograr estacionariedad, $d = 2$
+  - Para poder capturar la caidas rapidas del ACF en los rezagos, $q = 2$
+  
+  
+- **Componente estacional**:
+  - Debido a que hay colas en el rezago 12 del PACF, esto sugiere un $P = 0$
+  - Como hay diferenciación estacional, $D = 1$
+  - Debido a que el ACF muestra un pico significativo en el rezago 12, $Q = 1$
+  
+Por tanto, un modelo tentativo seria un $\text{ARIMA}(0,2,2) \times (0,1,1)_{12}$
+
+Verificando sus residuales:
+
+```{r}
+checkresiduals(Arima(serie_transformada, order = c(0, 2, 2), seasonal = list(order = c(0, 1, 1),
+                                                                             period = 12)))
+```
+En el ACF de los residuales se aprecia una cola en los primeros rezagos, donde es posible elegir un modelo $\text{ARIMA}(1,2,2) \times (0,1,1)_{12}$ ó $\text{ARIMA}(2,2,2) \times (0,1,1)_{12}$ debido a los 2 rezagos significativos vistos en el ACF.
+
+Eligiendo el modelo $\text{ARIMA}(1,2,2) \times (0,1,1)_{12}$: 
+
+\[
+(1 - \phi_1 B)(1 - B)^2(1 - B^{12}) y_t = (1 + \theta_1 B + \theta_2 B^2)(1 + \Theta_1 B^{12}) \varepsilon_t
+\]
+
+E implementando el modelo en R con la función `Arima`
+
+```{r}
+modelo <- Arima(serie_transformada, order = c(1, 2, 2), seasonal = list(order = c(0, 1, 1),
+                                                                        period = 12))
+summary(modelo)
+```
+Y, donde sus parámetros estimados está dados por los siguientes parámetros:
+
+- El parámetro autoregresivo (AR) no estacional es $\phi_1 = -0.7880$
+
+- Los parámetros de su media móvil (MA) no estacional es $\theta_1 = -0.0403$, $\theta_2 = -0.5522$
+
+- Su parámetro MA estacional es $\Theta_1 = -0.7198$
+
+Para evaluar la adecuación del modelo, se realiza un análisis a los residuos:
+
+```{r}
+checkresiduals(modelo)
+tseries::jarque.bera.test(modelo$residuals)
+```
+
+En este los residuos fluctuan de manera aleatoria alrededor de 0 sin mostrar una tendencia clara, a pesar de que se observan algunos picos aislados que sobresalen de su patrón general, su amplitud es relativamente constante a lo largo del tiempo.
+
+Por otro lado, los rezagos en el ACF se encuentran dentro de las bandas de confianza lo que sugiere que no hay autocorrelación significativa en los residuos, lo que nos indica que el modelo ha capturado adecuadamente la dependencia temporal de los datos y los residuos son esencialmente ruido blanco. El histograma de los residuos refuerza lo mencionado anteriormente mostrando que estos tienen una distibución aproximadamente normal, aunque el histograma muestra una ligera asimetría no refleja un problema grave respecto a los residuos
+
+Tambien se tiene una prueba Ljung-Box para el diagnostico de residuales donde el p-valor de esta es mayor al nivel de significancia (en este caso $\alpha = 0.05$) lo que indica que NO hay evidencia suficiente para rechazar $H_0$, lo que significa que no hay autocorrelación significativa en los residuos y por tanto se podrían considerar ruido blanco
+
+Por ultimo, se toma en cuenta la prueba de Jarque-Bera para evaluar la presencia de normalidad en los residuales, y, dado que el p-valor es mayor a nivel de significancia ($\alpha = 0.05$) esto sugiere que no hay evidencia suficiente para afirmar que los residuos se desvían significativamente de una distribución normal. Por lo que los resultados de ambas pruebas respaldan la adecuación del modelo
+
+
+\section{Punto 2}
+
+Uitlice el modelo estimado en el item anterior para realizar un pronóstico para los últimos 24 meses.
+
+
+Para realizar el pronostico, usaremos el modelo elegido anteriormente, sin embargo para todo esto se utilizo la serie transformada y para hacer un correcto pronostico debemos hacerlo en la escala original de los datos, por lo tanto se mostrara la grafica del pronostico (serie transformada) junto con sus bandas de confianza y posterior a esto se realizara un correccion del sesgo al volver a la escala original.
+
+```{r}
+pronostico_modelo1 = forecast(modelo, h = 24, level = c(95), fan = FALSE)
+
+autoplot(pronostico_modelo1) + autolayer(pronostico_modelo1)
+```
+
+
+Para corregir el sesgo, debemos utilizar la siguiente formula, donde nuestro caso es cuando lamda es diferente de 0.
+
+
+![](sesgo.jpg)
+
+
+```{r}
+Datos_pronostico = stats::window(serie1, start = c(1977, 1))
+
+forecast_data <- forecast(modelo, h=24, level=95)
+r <- ts(as.data.frame(forecast_data), freq=12,
+start=start(Datos_pronostico))^(1/lambda_optimo)
+```
+
+
+```{r}
+lami <- 1/lambda_optimo
+ses <- 0.5 + 0.5 * (1 + 2*(lami-1)*((summary(modelo)$sigma2) /
+((lami + forecast_data$mean)^2)))^(1/2)
+```
+
+
+Asi, finalmente, el pronostico usando nuestro modelo (en la escala original) es el siguiente:
+
+```{r}
+sesgo <- ses^(1/lambda_optimo)
+z_t <- r*sesgo
+z_t
+```
+
+
+En la siguiente grafica se puede ver la diferencia que existe entre el pronostico y los datos originales
+
+```{r}
+plot(Datos_pronostico,
+xlab = "Tiempo",
+ylab = expression(paste("tasa de desempleo en Estados Unidos (", Z[t], ")")),
+main = "Pronostico con correccion de sesgo",
+xlim = c(1977.1, 1978), ylim = c(550,900),col="blue")
+lines(z_t[,1], col="red")
+# Agregar leyenda
+legend("topright", legend = c("Pronostico", "Serie Z_t"),
+col = c("red", "blue"), lwd = 2, lty = 1, bty = "n")
+```
+
+
+\section{Punto 3}
+
+Explore la función **HoltWinters()** para realizar un pronóstico de las mismas observaciones, utilizando EWMA, es decir una media movil exponencialmente ponderada o más breve suavizamiento exponencial o e mismo método de Holt-Winters si es el caso. Que valor de los parámetyros de suavizamiento $\alpha$, $\beta$ y $\gamma$. 
+Encuentra Ud que son los más adecuados para su conjunto de datos?.
+
+```{r}
+pro <- HoltWinters(serie_diff)
+#Obtenemos los valores optimos de cada una de las variables de interes, despues se imprimen
+alpha_optimo <- pro$alpha
+beta_optimo <- pro$beta
+gamma_optimo <- pro$gamma
+```
+
+```{r}
+cat("Alpha óptimo:", alpha_optimo, "\n")
+```
+
+
+```{r}
+cat("Beta óptimo:", beta_optimo, "\n")
+```
+
+```{r}
+cat("Gamma óptimo:", gamma_optimo, "\n")
+```
+
+Se tiene que los valores óptimos son $\alpha= 0.8875595$ , $\beta = 0.1118442$, $\gamma = 1$, y se procede a realizar el pronóstico:
+
+```{r}
+fore <- predict(pro, n.ahead = 12, prediction.interval = TRUE, level =
+0.95)
+plot(pro, fore)
+```
+
+```{r}
+forecast1 <- forecast(pro, h = 4)
+error <- accuracy(forecast1)[2]
+cat("Minimum Error:", error, "\n")
+```
+
+Este resultando quiere decir que la diferencia entres los datos reales y los del pronostico son muy minimos, por lo que lo convierte en un pronostico considerablemente acertado
+
+```{r}
+print(forecast1)
+```
+
+
+\section{Punto 4}
+
+Compare los 2 pronósticos obtenidos en los items anteriores evaluando para cada uno medidas de calidad de pronóstico RMSE, MAE, MAPE en la pag 72 de las notas (2DA parte). En base a los pronósticos cúal modelo prefiere y por que? anote sus propias conclusiones.
+
+
+Las medidas de calidad que se usan en este caso son las siguientes:
+
+- **RMSE:** Es la raíz del error cuadrático medio que se encarga de medir la dispersión de los errores de predicción.
+
+$$RMSE=\sqrt{\frac{\sum_{t=T+1}^{n}(y_t-\hat{y_t})^2}{h}}$$
+
+- **MAE:** Es el promedio de los valores absolutos de los errores del pronostico, es decir, mide el error promedio entre los valores reales y los pronósticos.
+
+$$MAE = \frac{\sum_{t=T+1}^{n}|y_t-\hat{y_t}|}{h}$$
+
+- **MAPE:** Es el promedio del error porcentual absoluto, es decir, mide el error en términos porcentuales.
+
+$$MAPE = \frac{\sum_{t=T+1}^{n}|\frac{y_t-\hat{y_t}}{y_t}|}{h}$$
+
+Para evaluar los pronosticos se hace uso de la función accuracy() que proporciona los valores respectivos de las metricas previamente explicadas
+
+```{r}
+# pronostico 1
+accuracy(pronostico_modelo1, Datos_pronostico)
+# pronostico 2
+accuracy(forecast1, Datos_pronostico)
+```
+
+Dado lo anterior se procede a análizar los resultados:
+
+- **RMSE:** Para esté caso se evidenció un RMSE menor en el primer pronóstico tanto para los datos de entrenamiento como para los del test, lo que indica un mejor desempeño de esté.
+
+- **MAE:** Nuevamente se obtiene un mejor desempeño en el primer pronóstico, esto se evidencia cuando vemos que el MAE tiene una diferencia considerable siendo menor al del pronóstico dos.
+
+- **MAPE:** Como se dijo anteriormente este indica el promedio del error porcentual absoluto donde para el primer pronóstico se obtuvo un valor del 94.95% y para el segundo un valor del 100%, dado esto se dice que, aunque ambos tienen un valor demasiado alto en terminos del error de predicción, el más viable es el primero que contiene un valor menor.
+
+Como conclusión se dice que en términos generales y evaluando las metricas, la mejor opción seria el pronóstico uno ya que proporciona mejores resultados que el segundo (esto observando los resultados obtenidos en las metricas que evaluan el modelo), sin embargo es importante ver otros posibles ya que los estudiados contienen un error demasiado alto en sus pronósticos. Lo anterior puede deberse a un problema de sobreajuste del modelo ya que en general, en la etapa de entrenamiento esté responde bien y se ajusta de forma adecuada a los datos pero a la hora de enfrentarse a datos nuevos para realizar predicciones comete demasiados errores lo que da un pronóstico poco confiable.
+

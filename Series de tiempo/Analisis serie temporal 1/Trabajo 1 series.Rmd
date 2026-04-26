@@ -1,0 +1,331 @@
+---
+output:
+  pdf_document:
+    toc: true
+  html_document: default
+---
+
+\pagebreak
+
+# Punto 1
+
+Considere el proceso $Z_t$ definido por:
+
+$$Z_t = A_1 cos(\omega t) + A_2 sin(\omega t)$$
+
+donde $\omega$ corresponde a un parámetro de frecuencia **constante**. $A_1$ Y $A_2$ son 2 variables normales **independientes** de media 0 y varianza $\sigma^2$.
+
+
+## Literal A
+
+Investigue, consulte las características de este proceso, su media, su varianza y su función de auto-correlación (no es necesario hacer o reportar los cálculos).
+
+- **Media**
+
+$$\mu = E[Z_t] = E[A_1 cos(\omega t) + A_2 sin(\omega t)$$
+
+Como $A_1$ y $A_2$ son variables normales independientes con media 0, su valor esperado sera de 0, por lo tanto:
+
+$$E[A_1] = E[A_2] = 0$$
+
+entonces:
+
+$$E[Z_t] = 0$$
+
+
+- **Varianza**
+
+Como $A_1$ y $A_2$ son variables normales independientes con varianza $\sigma^2$, la varianza del proceso $Z_t$ es la suma de las varianzas.
+
+Por lo tanto:
+
+$$\sigma^2 = Var[Z_t] = Var[A_1 cos(\omega t) + A_2 sin(\omega t)]$$
+
+- **Funcion de autocorrelacion**
+
+$$R(h) = E[Z_t Z_{t+h}]$$
+
+Como $A_1$ y $A_2$ son variables normales independientes con varianza $\sigma^2$, tambien teniendo en cuenta que $cos(\omega t)$  y $sin(\omega t)$ son ortoganales entre si, entonces:
+
+
+$$R(h) = \sigma ^2 cos(\omega h)$$
+
+## Literal B
+
+¿Es el proceso $Z_t$ estacionario?.
+
+Debemos verificar si el la media, varianza, funcion autocorrelacion son invariantes a lo largo del tiempo. Como la media y la varianza son constantes se puede decir que es un proceso estacionario
+
+
+```{r, echo =FALSE, warning=FALSE}
+library(ggplot2)
+```
+
+
+
+```{r}
+set.seed(10001)
+# Parámetros del proceso
+w <- pi/3
+s <- 0.75
+A1_2 <- rnorm(1)
+A2_2 <- rnorm(1)
+t <- seq(0, 40, 1)
+Z2 <- A1_2 * cos(w * t) + A2_2 * sin(w * t)
+# Calcular la media y sigmaˆ2
+media <- rep(0, length(t))
+varianza <- rep(s^2, length(t))
+# Gráfico
+ggplot(data.frame(t, Z2, media, varianza)) +
+geom_point(aes(x = t, y = Z2), color = "skyblue3") +
+geom_line(aes(x=t, y=Z2),color = "skyblue3") +
+geom_hline(yintercept = 0, color = "red") + # Línea de la media
+geom_hline(yintercept = c(-s^2, s^2), linetype = "dashed", color = "black") # Líneas de ±sigmaˆ2
+```
+
+
+
+## Literal C
+
+Grafique 2 (**dos**) realizaciones de este proceso
+
+
+
+```{r}
+set.seed(10001)
+# Parámetros del proceso
+w <- pi/3
+s <- 1
+A1_1 <- rnorm(1) # para A1 de la realización 1
+A2_1 <- rnorm(1) # para A2 de la realización 1
+A1_2 <- rnorm(1) # para A1 de la realización 2
+A2_2 <- rnorm(1) # para A2 de la realización 2
+# Realizaciones del proceso
+t <- seq(0, 40, 0.1)
+Z1 <- A1_1 * cos(w * t) + A2_1 * sin(w * t)
+Z2 <- A1_2 * cos(w * t) + A2_2 * sin(w * t)
+# Gráfico
+ggplot(data.frame(t, Z1, Z2)) +
+geom_point(aes(x = t, y = Z1), color = "red") +
+geom_point(aes(x = t, y = Z2), color = "blue") +
+geom_line(aes(x = t, y = Z1), color = "red", lty = 2) +
+geom_line(aes(x = t, y = Z2), color = "blue", lty = 2) +
+geom_hline(yintercept = 0, color = "black") +
+guides(color = guide_legend(title = "Realizaciones"))
+```
+
+
+# Punto 2
+
+El siguiente código en R genera una serie temporal con 100 datos. Usted
+va a identificar el tipo de proceso subyacente, realizando una gráfica de los datos y también graficando los correlogramas
+
+
+## Literal A
+
+Ejecute el codigo anterior, colocando en el campo en azul cedula, el número de cédula de uno de los integrantes del grupo.
+
+
+```{r, warning=FALSE}
+library(ggplot2)
+library(dplyr)
+library(hrbrthemes)
+generador <- function(cedula){
+set.seed(cedula)
+data <- rnorm(100)
+data
+}
+times <- seq(1,100)
+values <- generador(1000192466)
+Datos = data.frame(times,values)
+# Most basic bubble plot
+p <- ggplot(Datos, aes(x=times, y=values)) +
+geom_line( color="steelblue") +
+geom_point() +
+xlab("")  +
+theme(axis.text.x=element_text(angle=60, hjust=1)) +
+  
+  geom_hline(yintercept = c(-2, mean(Datos$values), 2),
+             linetype = 4,
+             color = 2,
+             lwd = 1)
+p
+```
+
+En este grafico podemos ver como la media de los datos es cercana a cero lo cual esto nos da señal de que existe un proceso subyacente de ruido blanco normal, otra cosa para analizar es la variabilidad de nuestros datos en la cual la mayoria de los valores se encuentran contenidos entre -2 y 2, el resto de valores se salen de lo supone ser la varianza del proceso.
+
+## Literal B
+
+Grafique la función de autocorrelación ACF y la función de autocorrelación parcial PACF, estimadas de los datos anteriores. Identifique el proceso.
+
+
+```{r}
+par(mfrow=c(1,2))
+acf(Datos$values, ylim=c(-1,1), main= "Simple", lag.max = 6)
+pacf(Datos$values, ylim=c(-1,1), main= "Parcial", lag.max = 6)
+```
+
+Analizando ambos gráficos, puede concluirse que se trata de un ruido blanco, ademas de mostrar que es estacional.
+
+
+# Punto 3 
+
+## Literal A
+
+Suponiendo que los datos del punto anterior corresponden a una realización
+de un proceso de ruido blanco $a_t$.
+
+Ud vá a construir 2 realizaciones de un proceso de media móvil MA(1), invertibles, una con correlación $\rho > 0$. y otra con $-\rho$.
+
+Grafique las correspondientes realizaciones o trayectorias y escriba las ecuaciones que los especifican. Que diferencias observa?.
+
+**Respuesta**
+
+Para este caso donde se desea construir dos realizaciones de un proceso MA(1) invertibles, se tiene el siguiente modelo:
+
+$$ Z_t = \mu + a_t - \theta_1 a_{t-1} $$
+
+Se tienen de covarianzas:
+
+$$ cov(z_t,z_{t+1}) = E[z_tz_{t+1}] - E[z_t]E[z_{t+1}]= -\theta \sigma^2_a  $$
+$$ Var[z_t] = cov(z_t,z_t) = E[(a_t - \theta a_{t-1})^2] = \sigma^2_a (1+\theta^2) $$
+
+Así para la función de auto-covarianza tenemos:
+
+$$\gamma_k = cov(z_t,z_{t+k}) = \left\{
+    \begin{array}{ll}
+        \sigma^2_a (1+\theta^2) & si\ k = 0 \\
+         -\theta \sigma^2_a & si\ k = 1 \\
+         0 & si\ k = \pm 2, \pm 3, ... \\
+    \end{array}
+\right.$$
+
+Para la función de auto-correlación tenemos:
+
+$$cov(z_t,z_{t+k}) = \rho_k = \frac{\gamma_k}{\gamma_0} = \left\{
+    \begin{array}{ll}
+        1 & si\ k = 0 \\
+         \frac{-\theta}{1+\theta^2} & si\ k = \pm 1 \\
+         0 & si\ k = \pm 2, \pm 3, ... \\
+    \end{array}
+\right.$$
+
+Luego tomamos de manera arbitraria valores para a, b y c que usaremos para hallar el valor de $$\theta$$
+$$B=\frac{-b\pm \sqrt{b^2-4ac}}{2a} $$
+Tomando a = 0.7, b = -1, c = 0.3
+
+$$B=\frac{-(-1)\pm \sqrt{(-1)^2-4(0.7)(0.3)}}{2(0.7)}$$
+De esto se obtiene:
+
+$$\theta_1 = 0.4286$$ ó $$\theta_1 = 1$$
+
+Esté proceso siempre es estacionario y para que sea invertible es necesario que las raices $\theta(B) = 1 - \theta_1B = 0$ caigan fuera del círculo unidad Para que esto suceda se debe cumplir que $|\theta_1| < 1$, en este caso se toma $\theta_1 = 0.4$
+
+Para la realización con $\rho = 0.4$ del MA(1)
+
+```{r}
+rho <- 0.4 
+a <- Datos$values
+ma <- numeric(length(a))
+
+# valores de MA(1)
+for (t in 2:length(a)) {
+  ma[t] <- rho * a[t-1] + a[t]
+}
+
+# Grafica
+plot(ma, type = "o", col = "green4", main = "MA(1) con rho = 0.4", pch = 20, xlab = "Tiempo", ylab = "Valor")
+abline(h = 0, col = "red")
+
+```
+
+# Punto 4
+
+## Literal A
+
+De la misma manera que el punto anterior considere que la realización del 1er punto corresponde a un proceso de **ruido blanco** $a_t$. Esta vez construya la correspondiente realización de un proceso de **autoregresivo** AR(2), que sea estacionario con una estructura de correlación **cíclica**. **Grafique** la correspondiente realización o trayectoria y escriba la ecuación que especifica el modelo.
+
+
+Recordemos que el modelo AR(2) esta dado por:
+
+\[Z_t = \phi_1 Z_{t-1} + \phi_2 Z_{t-2} + a_t\]
+
+donde:
+
+- $Z_t$ es el valor del proceso en el tiempo t
+- $\phi_1$ y $\phi_2$ son los coeficientes autorregresivos
+- $a_t$ es el ruido blanco, el cual consideramos en el punto # 1
+
+Para $\phi_1$ y $\phi_2$ se escoge arbitrariamente $\frac{1}{2}$ y $-\frac{1}{4}$ respectivamente, respetando la condicion de que tenga al menos una raiz compleja, esto se puede verficar facilmente con el discriminante:
+
+\[\sqrt{(-0.5)^2 -4*1*0.25} = \sqrt{-0.75}\]
+
+Con esto, se comprueba que el polinomio caracteristico posee raices complejas, por lo que los valores de la ecuacion en diferencias se estabilizan
+
+Por lo que la realizacion queda de la siguiente manera:
+
+\[Z_t = \frac{1}{2} Z_{t-1} + \frac{1}{4} Z_{t-2} + a_t\]\]
+
+Y, el polinomio autorregresivo:
+
+\[(I - 0.5B + 0.25B^2)Z_t = a_t\]
+
+Ahora, con todo esto, se realiza el proceso AR(2) junto con su termino de error:
+
+```{r}
+phi1 <- 0.5
+phi2 <- -0.25
+
+a <- Datos$values 
+
+Z <- vector()
+Z[1] <- 0.1
+Z[2] <- 0.3 # Valores aleatorios
+
+for (t in 3:100) {
+    Z[t] <- phi1 * Z[t-1] + phi2 * Z[t-2] + a[t]
+}
+
+data_ar2 <- data.frame(times, Z)
+ggplot(data_ar2, aes(x = times, y = values)) +
+  geom_line(color = "steelblue") +
+  geom_point(color = "black") +
+  labs(x = "Tiempo", y = expression(Z[t]), title = "Realización del Proceso AR(2)") +
+  theme_minimal()
+```
+
+
+## Literal B
+
+```{r}
+par(mfrow=c(1,2))
+acf(data_ar2$Z, main= "Simple", lag.max = 40)
+pacf(data_ar2$Z, main= "Parcial", lag.max = 30)
+```
+
+La ACF exhibe un comportamiento autorregresivo de orden 2, lo cual sugiere estacionariedad. Ademas, muestra un patrón de onda sinusoidal amortiguada, indicando un comportamiento cíclico. Por otro lado, la PACF revela un pico en el primer retardo, lo que indica una fuerte correlación entre $Z_t$ y $Z_{t-1}$
+
+## Literal C
+
+```{r, message=FALSE}
+ggplot(data.frame(Zt = Z[2:100], Zt_1 = Z[1:99]), aes(x = Zt, y = Zt_1)) +
+  geom_point(color = "darkgreen", shape = 20) +
+  geom_smooth(method = "lm", se = FALSE, color = "black", linetype = "dashed") +  
+  labs(x = "Zt", y = "Zt-1", title = "Grafico de dispersion Zt vs Zt-1")
+
+ggplot(data.frame(Zt = Z[3:100], Zt_2 = Z[1:98]), aes(x = Zt, y = Zt_2)) +
+  geom_point(color = "orange", shape = 20) +
+  geom_smooth(method = "lm", se = FALSE, color = "black", linetype = "dashed") +  
+  labs(x = "Zt", y = "Zt-2", title = "Grafico de dispersion Zt vs Zt-2")
+
+ggplot(data.frame(Zt = Z[4:100], Zt_3 = Z[1:97]), aes(x = Zt, y = Zt_3)) +
+  geom_point(color = "purple", shape = 20) +
+  geom_smooth(method = "lm", se = FALSE, color = "black", linetype = "dashed") +
+  labs(x = "Zt", y = "Zt-3", title = "Grafico de dispersion Zt vs Zt-3")
+```
+
+
+En el caso de $Z_t$ vs $Z_{t-1}$, se observa una correlacion lineal medianamente fuerte, lo cual es congruente con la interpretacion del PACF en el literal B. Por otro lado, en el caso de $Z_t$ vs $Z_{t-2}$, se aprecia una dispersion ligeramente mayor, lo que podria debilitar esta correlacion. Respecto a $Z_t$ vs $Z_{t-3}$ se observa una correlacion negativa debil.
+
+Comparando estos graficos con los de dispersión del proceso MA(1) del punto #3, es evidente que estos no muestran ningun tipo de correlacion.
+
