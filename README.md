@@ -12,17 +12,10 @@
 
 
 
-<p>
-
-I am a 23-year-old Statistics student based in Bello, Colombia, currently working as an intern and close to graduating.
-
-</p>
-
-
 
 <p>
 
-I am passionate about Data Analytics because I believe that understanding data enables organizations to make informed decisions that create real and positive impact.
+I am a 23-year-old Statistics, I am passionate about Data Analytics because I believe that understanding data enables organizations to make informed decisions that create real and positive impact.
 
 </p>
 
